@@ -89,7 +89,7 @@ class TestGreaterThanValidatorWhenGreater(TestWithScenarios):
         v = validators.make_greater_than_validator(self.gtm)
         try:
             v(self.value, self.name)
-        except ValueError as v:
+        except ValueError:
             self.fail("%s gt validator failed with message" % self.name)
 
 
@@ -109,3 +109,33 @@ class TestGreaterThanValidatorWhenNotGreater(TestWithScenarios):
         v = validators.make_greater_than_validator(self.gtm)
         with self.assertRaises(ValueError):
             v(self.value, self.name)
+
+
+class TestMinMaxValidatorValidCases(TestWithScenarios):
+    scenarios = [
+        ("greater than",
+         dict(name="ints", min_max=(1, 10))),
+        ("equal",
+         dict(name="ints", min_max=(1, 1))),
+    ]
+
+    def test_gt_validator(self):
+        v = validators.make_min_max_validator()
+        try:
+            v(self.min_max, self.name)
+        except ValueError:
+            self.fail("%s gt validator failed with message" % self.name)
+
+
+class TestMinMaxValidatorInvalidCases(TestWithScenarios):
+    scenarios = [
+        ("clearly",
+         dict(name="ints", min_max=(11, 10))),
+        ("also clearly",
+         dict(name="ints", min_max=(1, -11))),
+    ]
+
+    def test_gt_validator(self):
+        v = validators.make_min_max_validator()
+        with self.assertRaises(ValueError):
+            v(self.min_max, self.name)

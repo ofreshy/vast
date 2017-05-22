@@ -5,6 +5,7 @@ import attr
 from vast import validators
 from vast.validators import (
     BOOL_VALIDATOR,
+    MIN_MAX_VALIDATOR,
     POS_INT_VALIDATOR,
     SEMI_POS_INT_VALIDATOR,
     STR_VALIDATOR,
@@ -82,6 +83,7 @@ class MediaFile(object):
         elif delivery == "streaming":
             POS_INT_VALIDATOR(min_bitrate, "min_bitrate")
             POS_INT_VALIDATOR(max_bitrate, "max_bitrate")
+            MIN_MAX_VALIDATOR((min_bitrate, max_bitrate), "min max bitrate")
 
         BOOL_VALIDATOR(scalable, "scalable")
         BOOL_VALIDATOR(maintain_aspect_ratio, "maintain_aspect_ratio")
@@ -97,4 +99,4 @@ class MediaFile(object):
 
         return inst
 
-m = MediaFile.make("streaming", "g", 0, 9, min_bitrate=10, max_bitrate=100)
+m = MediaFile.make("streaming", "g", 0, 9, min_bitrate=100, max_bitrate=100)

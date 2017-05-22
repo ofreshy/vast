@@ -59,6 +59,24 @@ def make_in_validator(_collection):
     return validate
 
 
+def make_min_max_validator():
+    """
+    
+    :return: validator that check that min is <= max 
+    """
+    msg_format = "'{min_val}' >  '{max_val}' for attribute {name!r}."
+
+    def validate(value, attr_name, msg=None):
+        min_val, max_val = value
+        if min_val > max_val:
+            msg = msg or msg_format.format(
+                min_val=min_val, max_val=max_val, name=attr_name,
+            )
+            raise ValueError(msg, attr_name, value)
+
+    return validate
+
+
 def make_compound_validator(*validators):
     """
     Makes a validator function from other validator functions
@@ -82,4 +100,7 @@ POS_INT_VALIDATOR = make_compound_validator(
     make_type_validator(int),
     make_greater_than_validator(0),
 )
+MIN_MAX_VALIDATOR = make_min_max_validator()
+
+# These are make functions
 IN_VALIDATOR = make_in_validator
