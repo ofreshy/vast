@@ -1,5 +1,11 @@
 
 def make_type_validator(_type):
+    """
+    Make a validator function to check type 
+    
+    :param _type: such as int / bool 
+    :return: validator function for that type
+    """
     msg_format = "'{name}' must be {type!r} (got {value!r} that is a {actual!r})."
 
     def validate(value, attr_name, msg=None):
@@ -14,6 +20,12 @@ def make_type_validator(_type):
 
 
 def make_greater_then_validator(must_be_greater_than_me):
+    """
+    Makes greater_than validator function
+     
+    :param must_be_greater_than_me: value that must be (strictly) smaller 
+    :return: validator function for greater than
+    """
     msg_format = "'{name}' must be greater than {gt!r} but got {value!r}."
 
     def validate(value, attr_name, msg=None):
@@ -27,6 +39,12 @@ def make_greater_then_validator(must_be_greater_than_me):
 
 
 def make_in_validator(_collection):
+    """
+    
+    :param _collection: a collection that implements __in__  
+    :return: validator function for in_ 
+    """
+
     collection = set(_collection)
 
     msg_format = "'{name}' with value {value!r} not found in collection {col!r}."
@@ -42,6 +60,11 @@ def make_in_validator(_collection):
 
 
 def make_compound_validator(*validators):
+    """
+    Makes a validator function from other validator functions
+    :param validators: iterable of validator functions 
+    :return: validator function that applies all validators 
+    """
     def validate(value, attr_name, msg=None):
         for validator_fn in validators:
             validator_fn(value, attr_name, msg=msg)
@@ -51,11 +74,11 @@ def make_compound_validator(*validators):
 
 STR_VALIDATOR = make_type_validator(str)
 BOOL_VALIDATOR = make_type_validator(bool)
-SEMI_POS_VALIDATOR = make_compound_validator(
+SEMI_POS_INT_VALIDATOR = make_compound_validator(
     make_type_validator(int),
     make_greater_then_validator(-1),
 )
-POS_VALIDATOR = make_compound_validator(
+POS_INT_VALIDATOR = make_compound_validator(
     make_type_validator(int),
     make_greater_then_validator(0),
 )

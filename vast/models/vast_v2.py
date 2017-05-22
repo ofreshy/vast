@@ -5,8 +5,8 @@ import attr
 from vast import validators
 from vast.validators import (
     BOOL_VALIDATOR,
-    POS_VALIDATOR,
-    SEMI_POS_VALIDATOR,
+    POS_INT_VALIDATOR,
+    SEMI_POS_INT_VALIDATOR,
     STR_VALIDATOR,
 )
 
@@ -21,7 +21,7 @@ class MediaFile(object):
     """
     2.3.1.4 Media File Attributes
     
-    * For media files that have no width and height (such as with an audio-only file), values of “0” are acceptable.
+    * For media files that have no width and height (such as with an audio-only file), values of 0 are acceptable.
     
     """
     delivery = attr.ib()
@@ -38,8 +38,6 @@ class MediaFile(object):
     maintain_aspect_ratio = attr.ib()
     api_framework = attr.ib()
 
-    attribs = ("a", "b")
-
     @classmethod
     def make(cls,
              delivery, type, width, height,
@@ -48,7 +46,7 @@ class MediaFile(object):
              maintain_aspect_ratio=False, api_framework=None,
              ):
         """
-        Entry point for class, making sure that all fields are valid
+        Entry point for making MediaFile instances. 
         
         :param delivery: either “progressive” for progressive download protocols (such as HTTP) 
         or “streaming” for streaming protocols.
@@ -76,14 +74,14 @@ class MediaFile(object):
 
         DELIVERY_VALIDATOR(delivery, "delivery")
         STR_VALIDATOR(type, "type")
-        SEMI_POS_VALIDATOR(width, "width")
-        SEMI_POS_VALIDATOR(height, "height")
+        SEMI_POS_INT_VALIDATOR(width, "width")
+        SEMI_POS_INT_VALIDATOR(height, "height")
 
         if delivery == "progressive":
-            POS_VALIDATOR(bitrate, "bitrate")
+            POS_INT_VALIDATOR(bitrate, "bitrate")
         elif delivery == "streaming":
-            POS_VALIDATOR(min_bitrate, "min_bitrate")
-            POS_VALIDATOR(max_bitrate, "max_bitrate")
+            POS_INT_VALIDATOR(min_bitrate, "min_bitrate")
+            POS_INT_VALIDATOR(max_bitrate, "max_bitrate")
 
         BOOL_VALIDATOR(scalable, "scalable")
         BOOL_VALIDATOR(maintain_aspect_ratio, "maintain_aspect_ratio")
