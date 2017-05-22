@@ -48,11 +48,13 @@ class _ParsedWrapper(object):
 
     @property
     def impression(self):
-        return self.wrapper.get("Impression")
+        return self.wrapper_dict.get("Impression")
 
+    @property
     def error(self):
-        return self.wrapper.get("Error")
+        return self.wrapper_dict.get("Error")
 
+    @property
     def creatives(self):
         creatives = self.wrapper_dict.get("creatives", {})
         for v in creatives.values():

@@ -9,6 +9,7 @@ from vast.validators import (
     POS_INT_VALIDATOR,
     SEMI_POS_INT_VALIDATOR,
     STR_VALIDATOR,
+    UNICODE_VALIDATOR,
 )
 
 DELIVERY = "streaming", "progressive"
@@ -131,9 +132,9 @@ class InLine(object):
 
     @classmethod
     def make(cls, ad_system, ad_title, impression, creatives):
-        STR_VALIDATOR(ad_system)
-        STR_VALIDATOR(ad_title)
-        STR_VALIDATOR(impression)
+        UNICODE_VALIDATOR(ad_system)
+        UNICODE_VALIDATOR(ad_title)
+        UNICODE_VALIDATOR(impression)
         if not creatives:
             raise TypeError
         if not isinstance(creatives, (list, set, tuple)):
@@ -160,16 +161,16 @@ class Wrapper(object):
     def make(cls, ad_system, vast_ad_tag_uri,
              ad_title=None, impression=None, error=None, creatives=None,
              ):
-        STR_VALIDATOR(ad_system)
-        STR_VALIDATOR(vast_ad_tag_uri)
+        UNICODE_VALIDATOR(ad_system, "ad_system")
+        UNICODE_VALIDATOR(vast_ad_tag_uri, "vast_ad_tag_uri")
         if ad_title is not None:
-            STR_VALIDATOR(ad_title)
+            UNICODE_VALIDATOR(ad_title, "ad_title")
         if impression is not None:
-            STR_VALIDATOR(impression)
+            UNICODE_VALIDATOR(impression, "impression")
         if error is not None:
-            STR_VALIDATOR(error)
+            UNICODE_VALIDATOR(error, "error")
         if creatives is not None:
             for c in creatives:
-                CREATIVE_VALIDATOR(c)
+                CREATIVE_VALIDATOR(c, "creative")
 
         return cls(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)

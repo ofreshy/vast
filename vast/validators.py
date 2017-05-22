@@ -91,6 +91,7 @@ def make_compound_validator(*validators):
 
 
 STR_VALIDATOR = make_type_validator(str)
+UNICODE_VALIDATOR = make_type_validator(unicode)
 BOOL_VALIDATOR = make_type_validator(bool)
 SEMI_POS_INT_VALIDATOR = make_compound_validator(
     make_type_validator(int),
