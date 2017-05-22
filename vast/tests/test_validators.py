@@ -50,9 +50,9 @@ class TestInValidatorWhenIn(TestWithScenarios):
     ]
 
     def test_in_validator(self):
-        in_validator = validators.make_in_validator(self.collection)
+        v = validators.make_in_validator(self.collection)
         try:
-            in_validator(self.value, self.name)
+            v(self.value, self.name)
         except ValueError:
             self.fail("%s in validator failed" % self.name)
 
@@ -70,6 +70,6 @@ class TestInValidatorWhenOut(TestWithScenarios):
     ]
 
     def test_in_validator(self):
-        in_validator = validators.make_in_validator(self.collection)
+        v = validators.make_in_validator(self.collection)
         with self.assertRaises(ValueError):
-            in_validator(self.value, self.name)
+            v(self.value, self.name)
