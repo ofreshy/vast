@@ -99,4 +99,77 @@ class MediaFile(object):
 
         return inst
 
-m = MediaFile.make("streaming", "g", 0, 9, min_bitrate=100, max_bitrate=100)
+
+@attr.s(frozen=True)
+class Creative(object):
+    """
+    TBD
+    """
+    pass
+
+
+CREATIVE_VALIDATOR = validators.make_type_validator(Creative)
+
+
+@attr.s(frozen=True)
+class InLine(object):
+    """
+    2.2.4 The <InLine> Element
+    The last ad server in the ad supply chain serves an <InLine> element. Within the nested elements of an <InLine> element are all the files and URIs necessary to display the ad.
+    2.2.4.1 Required InLine Elements
+    Contained directly within the <InLine> element are the following required elements:
+    • <AdSystem>: the name of the ad server that returned the ad
+    • <AdTitle>: the common name of the ad
+    • <Impression>: a URI that directs the video player to a tracking resource file that the video player
+    should request when the first frame of the ad is displayed
+    • <Creatives>: the container for one or more <Creative> elements
+    """
+    ad_system = attr.ib()
+    ad_title = attr.ib()
+    impression = attr.ib()
+    creatives = attr.ib()
+
+    @classmethod
+    def make(cls, ad_system, ad_title, impression, creatives):
+        STR_VALIDATOR(ad_system)
+        STR_VALIDATOR(ad_title)
+        STR_VALIDATOR(impression)
+        if not creatives:
+            raise TypeError
+        if not isinstance(creatives, (list, set, tuple)):
+            raise TypeError
+        for creative in creatives:
+            CREATIVE_VALIDATOR(creative)
+
+        return cls(ad_system, ad_title, impression, creatives)
+
+
+@attr.s(frozen=True)
+class Wrapper(object):
+    """
+    
+    """
+    ad_system = attr.ib()
+    vast_ad_tag_uri = attr.ib()
+    ad_title = attr.ib()
+    impression = attr.ib()
+    error = attr.ib()
+    creatives = attr.ib()
+
+    @classmethod
+    def make(cls, ad_system, vast_ad_tag_uri,
+             ad_title=None, impression=None, error=None, creatives=None,
+             ):
+        STR_VALIDATOR(ad_system)
+        STR_VALIDATOR(vast_ad_tag_uri)
+        if ad_title is not None:
+            STR_VALIDATOR(ad_title)
+        if impression is not None:
+            STR_VALIDATOR(impression)
+        if error is not None:
+            STR_VALIDATOR(error)
+        if creatives is not None:
+            for c in creatives:
+                CREATIVE_VALIDATOR(c)
+
+        return cls(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)
