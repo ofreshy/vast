@@ -3,7 +3,7 @@ import xmltodict
 
 from vast.parsers import vast_v2
 
-_parsers = {
+_PARSERS = {
     u"2.0": vast_v2.parse_xml
 }
 
@@ -26,7 +26,7 @@ def from_xml_string(xml_input, **kwargs):
 
     vast = _ParsedVast(root)
     version = vast.version
-    parser = _parsers.get(version)
+    parser = _PARSERS.get(version)
     if parser is None:
         raise ValueError("unknown version %s" % version)
 
