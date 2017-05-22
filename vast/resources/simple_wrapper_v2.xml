@@ -1,0 +1,10 @@
+<VAST version="2.0">
+	<Ad id="70470">
+        <Wrapper>
+            <AdSystem>MagU</AdSystem>
+            <VASTAdTagURI><![CDATA[//vast.dv.com/v3/vast?_vast]]></VASTAdTagURI>
+            <Error><![CDATA[//magu.d.com/viderr?err=[ERRORCODE]]]></Error>
+            <Impression><![CDATA[ //magu.d.com/vidimp ]]></Impression>
+        </Wrapper>
+	</Ad>
+</VAST>
