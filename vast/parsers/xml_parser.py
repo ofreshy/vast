@@ -2,6 +2,8 @@ from collections import defaultdict
 
 import xmltodict
 
+from vast.models.vast_v2 import Ad, Vast, Wrapper
+
 
 class ParseError(Exception):
     pass
@@ -10,24 +12,38 @@ class ParseError(Exception):
 class _ParsedVast(object):
     @classmethod
     def from_xml_root(cls, root):
-        inline, wrapper = None, None
-        ad = root["VAST"].get("Ad", {})
-        if "Inline" in ad:
-            inline = _ParsedInLine(ad["Inline"])
-        elif "Wrapper" in ad:
-            wrapper = _ParsedWrapper(ad["Wrapper"])
-        else:
-            raise ParseError("Must have either Inline or Wrapper")
-        return cls(root, inline, wrapper)
+        ad_root = root["VAST"].get("Ad", {})
+        return cls(root, _ParsedAd.from_ad_root(ad_root))
 
-    def __init__(self, root, inline, wrapper):
+    def __init__(self, root, ad):
         self.root = root
-        self.inline = inline
-        self.wrapper = wrapper
+        self.ad = ad
 
     @property
     def version(self):
         return self.root["VAST"]["@version"]
+
+
+class _ParsedAd(object):
+    @classmethod
+    def from_ad_root(cls, ad_root):
+        inline, wrapper = None, None
+        if "Inline" in ad_root:
+            inline = _ParsedInLine(ad_root["Inline"])
+        elif "Wrapper" in ad_root:
+            wrapper = _ParsedWrapper(ad_root["Wrapper"])
+        else:
+            raise ParseError("Must have either Inline or Wrapper")
+        return cls(ad_root, inline, wrapper)
+
+    def __init__(self, ad_root, inline, wrapper):
+        self.ad_root = ad_root
+        self.inline = inline
+        self.wrapper = wrapper
+
+    @property
+    def id(self):
+        return self.ad_root.get("@id")
 
 
 class _ParsedWrapper(object):
@@ -105,7 +121,6 @@ class _ParsedInLine(object):
 
         return mime_to_sizes
 
-
     @property
     def creatives(self):
         # only interested in Linear right now
@@ -133,11 +148,26 @@ class _ParsedInLine(object):
 def from_xml_string(xml_input, **kwargs):
     root = xmltodict.parse(xml_input, **kwargs)
 
-    parsed = _ParsedVast.from_xml_root(root)
-    if parsed.wrapper:
-        return {u"wrapper": _parse_wrapper(parsed.wrapper)}
+    vast = _ParsedVast.from_xml_root(root)
+    version = vast.version
+    ad = vast.ad
+
+    if ad.wrapper:
+        return Vast.make(
+            version=version,
+            ad=Ad.make(
+                id=ad.id,
+                wrapper=_parse_wrapper(ad.wrapper),
+            ),
+        )
     else:
-        return {u"inline": _parse_inline(parsed.inline)}
+        return Vast.make(
+            version=version,
+            ad=Ad.make(
+                id=ad.id,
+                inline=_parse_inline(ad.inline),
+            ),
+        )
 
 
 def _parse_wrapper(wrapper):
@@ -150,7 +180,6 @@ def _parse_wrapper(wrapper):
 
     creatives = [from_creaive_dict(c) for c in wrapper.creatives] or None
 
-    from vast.models.vast_v2 import Wrapper
     wrapper_model = Wrapper.make(
         ad_system=ad_system,
         vast_ad_tag_uri=vast_ad_tag_uri,

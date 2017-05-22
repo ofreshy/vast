@@ -174,3 +174,57 @@ class Wrapper(object):
                 CREATIVE_VALIDATOR(c, "creative")
 
         return cls(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)
+
+
+WRAPPER_VALIDATOR = validators.make_type_validator(Wrapper)
+INLINE_VALIDATOR = validators.make_type_validator(InLine)
+
+
+@attr.s(frozen=True)
+class Ad(object):
+    """
+    
+    """
+    id = attr.ib()
+    wrapper = attr.ib()
+    inline = attr.ib()
+
+    @classmethod
+    def make(cls, id, wrapper=None, inline=None):
+        """
+        
+        :param id: 
+        :param wrapper: 
+        :param inline: 
+        :return: 
+        """
+        UNICODE_VALIDATOR(id, "id")
+        if wrapper is not None:
+            WRAPPER_VALIDATOR(wrapper, "wrapper")
+        elif inline is not None:
+            INLINE_VALIDATOR(inline, "inline")
+        else:
+            raise ValueError("Must provide either wrapper or inline")
+
+        return cls(id, wrapper, inline)
+
+
+AD_VALIDATOR = validators.make_type_validator(Ad)
+VERSIONS = "2.0", "3.0"
+VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
+
+
+@attr.s(frozen=True)
+class Vast(object):
+    """
+    The Document Root Element
+    """
+
+    version = attr.ib()
+    ad = attr.ib()
+
+    @classmethod
+    def make(cls, version, ad):
+        VERSION_VALIDATOR(version, "version")
+        AD_VALIDATOR(ad, "ad")
+        return cls(version, ad)
