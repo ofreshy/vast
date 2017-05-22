@@ -19,7 +19,7 @@ def make_type_validator(_type):
     return validate
 
 
-def make_greater_then_validator(must_be_greater_than_me):
+def make_greater_than_validator(must_be_greater_than_me):
     """
     Makes greater_than validator function
      
@@ -76,10 +76,10 @@ STR_VALIDATOR = make_type_validator(str)
 BOOL_VALIDATOR = make_type_validator(bool)
 SEMI_POS_INT_VALIDATOR = make_compound_validator(
     make_type_validator(int),
-    make_greater_then_validator(-1),
+    make_greater_than_validator(-1),
 )
 POS_INT_VALIDATOR = make_compound_validator(
     make_type_validator(int),
-    make_greater_then_validator(0),
+    make_greater_than_validator(0),
 )
 IN_VALIDATOR = make_in_validator

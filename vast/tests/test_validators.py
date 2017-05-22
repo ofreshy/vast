@@ -73,3 +73,39 @@ class TestInValidatorWhenOut(TestWithScenarios):
         v = validators.make_in_validator(self.collection)
         with self.assertRaises(ValueError):
             v(self.value, self.name)
+
+
+class TestGreaterThanValidatorWhenGreater(TestWithScenarios):
+    scenarios = [
+        ("ints",
+         dict(name="ints", gtm=1, value=5)),
+        ("floats",
+         dict(name="floats", gtm=1.0, value=2)),
+        ("strings",
+         dict(name="strings", gtm="a", value="b")),
+    ]
+
+    def test_gt_validator(self):
+        v = validators.make_greater_than_validator(self.gtm)
+        try:
+            v(self.value, self.name)
+        except ValueError as v:
+            self.fail("%s gt validator failed with message" % self.name)
+
+
+class TestGreaterThanValidatorWhenNotGreater(TestWithScenarios):
+    scenarios = [
+        ("ints",
+         dict(name="ints", gtm=1, value=0)),
+        ("ints_equal",
+         dict(name="ints", gtm=1, value=1)),
+        ("floats",
+         dict(name="floats", gtm=1.0, value=-1)),
+        ("strings",
+         dict(name="strings", gtm="a", value="A")),
+    ]
+
+    def test_gt_validator(self):
+        v = validators.make_greater_than_validator(self.gtm)
+        with self.assertRaises(ValueError):
+            v(self.value, self.name)
