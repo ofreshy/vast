@@ -82,7 +82,6 @@ def parse_creatives(xml_dict):
 def parse_creative(xml_dict):
     # This is not exactly one of.
     # At least one should be present but companion ads can show up with any
-    one_of = None
     one_of_fields = ("Linear", "CompanionAds", "NonLinear")
     linear, non_linear, companion_ads = extract_fields(xml_dict, one_of_fields, method="one_of")
     if linear:
@@ -184,4 +183,3 @@ def parse_media_file(xml_dict):
         maintain_aspect_ratio=maintain_aspect_ratio,
         api_framework=api_framework,
     )
-

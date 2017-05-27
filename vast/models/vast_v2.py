@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+Models for the VAST 2.0 Version 
+
+Models are intentionally simple containers with very little logic. 
+They 'know' WHAT but not HOW 
+"""
 import attr
 
 from vast import validators
@@ -318,7 +324,7 @@ class Ad(object):
 
 
 AD_VALIDATOR = validators.make_type_validator(Ad)
-VERSIONS = "2.0", "3.0"
+VERSIONS = "2.0",
 VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
 
 
