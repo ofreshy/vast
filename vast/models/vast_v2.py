@@ -7,6 +7,7 @@ Models are intentionally simple containers with very little logic.
 They 'know' WHAT but not HOW 
 """
 import attr
+from enum import Enum
 
 from vast import validators
 from vast.validators import (
@@ -18,10 +19,13 @@ from vast.validators import (
     UNICODE_VALIDATOR,
 )
 
-DELIVERY = "streaming", "progressive"
+
+class Delivery(Enum):
+    STREAMING = "streaming"
+    PROGRESSIVE = "progressive"
 
 
-DELIVERY_VALIDATOR = validators.make_in_validator(DELIVERY)
+DELIVERY_VALIDATOR = validators.make_in_validator([d.value for d in Delivery])
 
 
 @attr.s(frozen=True)
@@ -32,11 +36,11 @@ class MediaFile(object):
     * For media files that have no width and height (such as with an audio-only file), values of 0 are acceptable.
     
     """
-    asset = attr.ib(validator=attr.validators.instance_of(unicode))
-    delivery = attr.ib(validator=attr.validators.in_(("progressive", "streaming")))
-    type = attr.ib(validator=attr.validators.instance_of(unicode))
-    width = attr.ib(convert=int, validator=attr.validators.instance_of(int))
-    height = attr.ib(convert=int, validator=attr.validators.instance_of(int))
+    asset = attr.ib()
+    delivery = attr.ib()
+    type = attr.ib()
+    width = attr.ib()
+    height = attr.ib()
 
     codec = attr.ib()
     id = attr.ib()
