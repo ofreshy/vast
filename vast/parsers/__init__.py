@@ -1,2 +1,2 @@
-class ParseError(Exception):
-    pass
+
+

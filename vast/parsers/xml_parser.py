@@ -1,8 +1,8 @@
 import xmltodict
 
-from vast.parsers import ParseError
 
 from vast.parsers import vast_v2
+from vast.parsers.shared import ParseError
 
 _PARSERS = {
     u"2.0": vast_v2.parse_xml
@@ -10,6 +10,13 @@ _PARSERS = {
 
 
 def from_xml_string(xml_input, **kwargs):
+    """
+    Entry point for parsing an XML
+    
+    :param xml_input: as str or file like object
+    :param kwargs: pass on to xmltodict
+    :return: parsed Vast object
+    """
     root = xmltodict.parse(xml_input, **kwargs)
     if "VAST" not in root:
         raise ParseError("root must have VAST element")

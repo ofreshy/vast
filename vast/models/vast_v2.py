@@ -26,10 +26,11 @@ class MediaFile(object):
     * For media files that have no width and height (such as with an audio-only file), values of 0 are acceptable.
     
     """
-    delivery = attr.ib()
-    type = attr.ib()
-    width = attr.ib()
-    height = attr.ib()
+    asset = attr.ib(validator=attr.validators.instance_of(unicode))
+    delivery = attr.ib(validator=attr.validators.in_(("progressive", "streaming")))
+    type = attr.ib(validator=attr.validators.instance_of(unicode))
+    width = attr.ib(convert=int, validator=attr.validators.instance_of(int))
+    height = attr.ib(convert=int, validator=attr.validators.instance_of(int))
 
     codec = attr.ib()
     id = attr.ib()
@@ -42,6 +43,7 @@ class MediaFile(object):
 
     @classmethod
     def make(cls,
+             asset,
              delivery, type, width, height,
              codec=None, id=None, bitrate=None,
              min_bitrate=None, max_bitrate=None, scalable=True,
@@ -50,6 +52,7 @@ class MediaFile(object):
         """
         Entry point for making MediaFile instances. 
         
+        :param asset: the url to the asset
         :param delivery: either “progressive” for progressive download protocols (such as HTTP) 
         or “streaming” for streaming protocols.
         :param type: MIME type for the file container. 
@@ -67,46 +70,149 @@ class MediaFile(object):
         :param api_framework: identifies the API needed to execute an interactive media file
         :return: 
         """
-        inst = cls(
+        UNICODE_VALIDATOR(asset, "asset")
+        DELIVERY_VALIDATOR(delivery, "delivery")
+        UNICODE_VALIDATOR(type, "type")
+        width, height = map(int, (width, height))
+        SEMI_POS_INT_VALIDATOR(width, "width")
+        SEMI_POS_INT_VALIDATOR(height, "height")
+
+        if delivery == "progressive":
+            bitrate = int(bitrate)
+            POS_INT_VALIDATOR(bitrate, "bitrate")
+        elif delivery == "streaming":
+            min_bitrate, max_bitrate = map(int, (min_bitrate, max_bitrate))
+            POS_INT_VALIDATOR(min_bitrate, "min_bitrate")
+            POS_INT_VALIDATOR(max_bitrate, "max_bitrate")
+            MIN_MAX_VALIDATOR((min_bitrate, max_bitrate), "min max bitrate")
+
+        if scalable is not None:
+            BOOL_VALIDATOR(scalable, "scalable")
+        else:
+            scalable = True
+
+        if maintain_aspect_ratio is not None:
+            BOOL_VALIDATOR(maintain_aspect_ratio, "maintain_aspect_ratio")
+        else:
+            maintain_aspect_ratio = False
+
+        if codec is not None:
+            UNICODE_VALIDATOR(codec, "codec")
+
+        if id is not None:
+            UNICODE_VALIDATOR(id, "id")
+
+        if api_framework is not None:
+            UNICODE_VALIDATOR(api_framework, "api_framework")
+
+        return cls(
+            asset,
             delivery, type, width, height,
             codec=codec, id=id, bitrate=bitrate,
             min_bitrate=min_bitrate, max_bitrate=max_bitrate, scalable=scalable,
             maintain_aspect_ratio=maintain_aspect_ratio, api_framework=api_framework,
         )
 
-        DELIVERY_VALIDATOR(delivery, "delivery")
-        STR_VALIDATOR(type, "type")
-        SEMI_POS_INT_VALIDATOR(width, "width")
-        SEMI_POS_INT_VALIDATOR(height, "height")
 
-        if delivery == "progressive":
-            POS_INT_VALIDATOR(bitrate, "bitrate")
-        elif delivery == "streaming":
-            POS_INT_VALIDATOR(min_bitrate, "min_bitrate")
-            POS_INT_VALIDATOR(max_bitrate, "max_bitrate")
-            MIN_MAX_VALIDATOR((min_bitrate, max_bitrate), "min max bitrate")
-
-        BOOL_VALIDATOR(scalable, "scalable")
-        BOOL_VALIDATOR(maintain_aspect_ratio, "maintain_aspect_ratio")
-
-        if codec is not None:
-            STR_VALIDATOR(inst, "codec", codec)
-
-        if id is not None:
-            STR_VALIDATOR(inst, "id", id)
-
-        if api_framework is not None:
-            STR_VALIDATOR(api_framework, "api_framework")
-
-        return inst
+API_FRAMEWORKS = "VPAID",
+API_FRAMEWORKS_VALIDATOR = validators.make_in_validator(API_FRAMEWORKS)
 
 
 @attr.s(frozen=True)
 class Creative(object):
     """
-    TBD
+    A creative in VAST is a file that is part of a VAST ad. 
+    Multiple creative may be provided in the form of  Linear, NonLinear, or Companions. 
+    Multiple creative of the same kind may also be provided in different  
+    technical formats so that the file most suited to the user’s device can be displayed
+     (only the creative best suited to the technology/device would be used in this case).
+    Despite how many or what type of  creative are included as part of the Ad, 
+    all creative files should generally represent the same creative  concept.  
+    Within the <InLine> element is one <Creatives> element. 
+    The <Creatives> element provides  details about the files for each creative to be included as part of the ad experience. 
+    Multiple  <Creative> may be nested within the <Creatives> element. 
+    Note the plural spelling of the primary  element <Creatives> and the singular spelling of the nested element <Creative>. 
+    Each nested <Creative> element contains one of: <Linear>, <NonLinear> or <CompanionAds>.  
+    
+    The following attributes are available for the <Creative> element: 
+    • id: an ad server-defined identifier for the creative
+    • sequence: the numerical order in which each sequenced creative should display 
+        (not to be confused with the <Ad> sequence attribute used to define Ad Pods)
+    • adId: identifies the ad with which the creative is served
+    • apiFramework: the technology used for any included API
+    All creative attributes are optional. 
     """
-    pass
+
+    # This is basically a one of - since there are not many types, we specify them all
+    linear = attr.ib()
+    non_linear = attr.ib()
+    companion_ads = attr.ib()
+
+    id = attr.ib()
+    sequence = attr.ib()
+    ad_id = attr.ib()
+    api_framework = attr.ib()
+
+    @classmethod
+    def make(cls,
+             linear=None, non_linear=None, companion_ad=None,
+             id=None, sequence=None, ad_id=None, api_framework=None,
+             ):
+        if all(x is None for x in (linear, non_linear, companion_ad)):
+            raise ValueError("Must specify either inline, non_linear or companion_ad")
+
+        # Add type checks here for ad_type
+        if id is not None:
+            STR_VALIDATOR(id, "id")
+        if sequence is not None:
+            SEMI_POS_INT_VALIDATOR(sequence, "sequence")
+        if ad_id is not None:
+            STR_VALIDATOR(ad_id, "ad_id")
+        if api_framework is not None:
+            API_FRAMEWORKS_VALIDATOR(api_framework, "api_framework")
+
+        return cls(linear, non_linear, companion_ad, id, sequence, ad_id, api_framework)
+
+
+@attr.s(frozen=True)
+class LinearCreative(object):
+    """
+    The most common type of video advertisement trafficked in the industry is a “linear ad”,
+    which is an ad  that displays in the same area as the content but not at the same time as the content.
+    In fact, the video  player must interrupt the content before displaying a linear ad.
+    Linear ads are often displayed right  before the video content plays.
+    This ad position is called a “predroll” position.
+    For this reason, a linear ad  is often called a “predroll.”
+    
+    A <Linear> element has two required child elements, the <Duration> and the <MediaFiles>  element. 
+    Additionally three optional child elements are offered: 
+    <VideoClicks>, <AdParameters> and <TrackingEvents>. 
+    """
+    # REQUIRED
+    duration = attr.ib()
+    media_files = attr.ib()
+
+    # OPTIONAL
+    video_clicks = attr.ib()
+    ad_parameters = attr.ib()
+    tracking_events = attr.ib()
+
+    @classmethod
+    def make(cls, duration, media_files, video_clicks=None, ad_parameters=None, tracking_events=None):
+        POS_INT_VALIDATOR(duration, "duration")
+
+        # TODO add check for media files
+
+        if video_clicks is not None:
+            # TODO add checks
+            pass
+        if ad_parameters is not None:
+            # TODO add checks
+            pass
+        if tracking_events is not None:
+            # TODO add checks
+            pass
+        return cls(duration, media_files, video_clicks, ad_parameters, tracking_events)
 
 
 CREATIVE_VALIDATOR = validators.make_type_validator(Creative)
@@ -116,7 +222,8 @@ CREATIVE_VALIDATOR = validators.make_type_validator(Creative)
 class InLine(object):
     """
     2.2.4 The <InLine> Element
-    The last ad server in the ad supply chain serves an <InLine> element. Within the nested elements of an <InLine> element are all the files and URIs necessary to display the ad.
+    The last ad server in the ad supply chain serves an <InLine> element. 
+    Within the nested elements of an <InLine> element are all the files and URIs necessary to display the ad.
     2.2.4.1 Required InLine Elements
     Contained directly within the <InLine> element are the following required elements:
     • <AdSystem>: the name of the ad server that returned the ad
@@ -125,6 +232,7 @@ class InLine(object):
     should request when the first frame of the ad is displayed
     • <Creatives>: the container for one or more <Creative> elements
     """
+    # REQUIRED
     ad_system = attr.ib()
     ad_title = attr.ib()
     impression = attr.ib()
@@ -132,15 +240,15 @@ class InLine(object):
 
     @classmethod
     def make(cls, ad_system, ad_title, impression, creatives):
-        UNICODE_VALIDATOR(ad_system)
-        UNICODE_VALIDATOR(ad_title)
-        UNICODE_VALIDATOR(impression)
+        UNICODE_VALIDATOR(ad_system, "ad_system")
+        UNICODE_VALIDATOR(ad_title, "ad_title")
+        UNICODE_VALIDATOR(impression, "impression")
         if not creatives:
-            raise TypeError
+            raise ValueError("Creatives must be provided")
         if not isinstance(creatives, (list, set, tuple)):
             raise TypeError
         for creative in creatives:
-            CREATIVE_VALIDATOR(creative)
+            CREATIVE_VALIDATOR(creative, "creative")
 
         return cls(ad_system, ad_title, impression, creatives)
 
