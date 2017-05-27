@@ -1,5 +1,11 @@
 from vast.models import vast_v2 as v2_models
-from vast.parsers.shared import accept_none, extract_fields, parse_duration, ParseError
+from vast.parsers.shared import (
+    accept_none,
+    extract_fields,
+    parse_duration,
+    ParseError,
+    to_bool,
+)
 
 
 def parse_xml(xml_dict):
@@ -144,29 +150,38 @@ def parse_media_files(xml_dict):
 
 
 def parse_media_file(xml_dict):
-    required_fields = ["#text", "@delivery", "@width", "@height"]
-    asset, delivery, width, height = extract_fields(xml_dict, required_fields)
+    required_fields = ["#text", "@delivery", "@type", "@width", "@height"]
+    asset, delivery, type, width, height = extract_fields(xml_dict, required_fields)
 
-    maybe_required_fields = ("@bitrate", "@min_bitrate", "@max_bitrate")
+    maybe_required_fields = ("@bitrate", "@minBitrate", "@maxBitrate")
     bitrate, min_bitrate, max_bitrate = extract_fields(xml_dict, maybe_required_fields, method="optional")
-    if delivery == "progressive" and bitrate is None:
+
+    no_bitrate_types = (u'application/x-shockwave-flash', u"application/javascript")
+    if delivery == "progressive" and type not in no_bitrate_types and bitrate is None:
         msg = "Bitrate must be declared when delivery is progressive in {xml_dict}"
         raise ParseError(msg.format(xml_dict=xml_dict))
-    if delivery == "streaming" and (min_bitrate is None or max_bitrate is None):
+    if delivery == "streaming" and  type not in no_bitrate_types and (min_bitrate is None or max_bitrate is None):
         msg = "Min and Max Bitrate must be declared when delivery is streaming in {xml_dict}"
         raise ParseError(msg.format(xml_dict=xml_dict))
 
+    optional_fields = ("@scalable", "@maintainAspectRatio", "@apiFramework")
+    scalable, maintain_aspect_ratio, api_framework = extract_fields(xml_dict, optional_fields, method="optional")
+    if scalable is not None:
+        scalable = to_bool(scalable)
+    if maintain_aspect_ratio is not None:
+        maintain_aspect_ratio = to_bool(maintain_aspect_ratio)
+
     return v2_models.MediaFile.make(
-        asset=xml_dict["#text"],
-        delivery=xml_dict["@delivery"],
-        type=xml_dict["@type"],
-        width=xml_dict["@width"],
-        height=xml_dict["@height"],
-        bitrate=xml_dict.get("@bitrate"),
-        min_bitrate=xml_dict.get("@min_bitrate"),
-        max_bitrate=xml_dict.get("@max_bitrate"),
-        scalable=xml_dict.get("@scalable"),
-        maintain_aspect_ratio=xml_dict.get("@maintain_aspect_ratio"),
-        api_framework=xml_dict.get("@api_framework"),
+        asset=asset,
+        delivery=delivery,
+        type=type,
+        width=width,
+        height=height,
+        bitrate=bitrate,
+        min_bitrate=min_bitrate,
+        max_bitrate=max_bitrate,
+        scalable=scalable,
+        maintain_aspect_ratio=maintain_aspect_ratio,
+        api_framework=api_framework,
     )
 

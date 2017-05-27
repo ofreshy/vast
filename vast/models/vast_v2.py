@@ -77,7 +77,7 @@ class MediaFile(object):
         SEMI_POS_INT_VALIDATOR(width, "width")
         SEMI_POS_INT_VALIDATOR(height, "height")
 
-        if delivery == "progressive":
+        if bitrate is not None:
             bitrate = int(bitrate)
             POS_INT_VALIDATOR(bitrate, "bitrate")
         elif delivery == "streaming":

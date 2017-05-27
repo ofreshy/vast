@@ -54,3 +54,10 @@ def _check_required_fields(xml_dict, fields):
     if missing:
         msg = "Missing required fields : {missing} in {xml_dict}"
         raise ParseError(msg.format(missing=missing, xml_dict=xml_dict))
+
+
+def to_bool(value):
+    value = str(value).lower()
+    if value in ("none", "0", "false"):
+        return False
+    return True

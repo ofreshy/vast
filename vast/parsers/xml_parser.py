@@ -11,7 +11,7 @@ _PARSERS = {
 
 def from_xml_string(xml_input, **kwargs):
     """
-    Entry point for parsing an XML
+    Entry point for parsing a VAST XML into a VAST model
     
     :param xml_input: as str or file like object
     :param kwargs: pass on to xmltodict

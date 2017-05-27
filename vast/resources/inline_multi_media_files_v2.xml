@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="2.0">
+    <Ad id="509080ATOU">
+        <InLine>
+            <AdSystem>MagU</AdSystem>
+            <AdTitle>Many Media Files</AdTitle>
+            <Impression><![CDATA[ https://mag.dom.com/admy?ad_id=509080ATOU ]]></Impression>
+            <Creatives>
+                <Creative>
+                    <Linear>
+                    <Duration>00:00:15</Duration>
+                    <MediaFiles>
+                        <MediaFile width="176" height="144" type="application/x-shockwave-flash" apiFramework="VPAID" delivery="progressive"><![CDATA[https://vpaid.dv.com/s.swf]]></MediaFile>
+                        <MediaFile width="176" height="144" type="application/javascript" apiFramework="VPAID" delivery="progressive"><![CDATA[https://vpaid.dv.com/js/vpaid-wrapper-dv.js]]></MediaFile>
+                        <MediaFile delivery="streaming" width="176" height="144" type="video/3gpp" minBitrate="51" maxBitrate="900" scalable="false" maintainAspectRatio="false"><![CDATA[https://dv.2mdn.net/videoplayback/id/f5316658i7/file.3gpp]]></MediaFile>
+                        <MediaFile delivery="progressive" width="320" height="180" type="video/3gpp" bitrate="177" scalable="false" maintainAspectRatio="false"><![CDATA[https://dv.2mdn.net/videoplayback/f5316658i78776/file.3gpp]]></MediaFile>
+                        <MediaFile delivery="progressive" width="640" height="360" type="video/mp4" bitrate="409" scalable="false" maintainAspectRatio="false"><![CDATA[https://dv.2mdn.net/videoplayback/id/f5316658cd737d42/file/file.mp4]]></MediaFile>
+                        <MediaFile delivery="progressive" width="1280" height="720" type="video/webm" bitrate="2452" scalable="false" maintainAspectRatio="false"><![CDATA[https://dv.2mdn.net/videoplayback/id/f5316658cd737d42/file.webm]]></MediaFile>
+                        <MediaFile delivery="progressive" width="256" height="144" type="application/x-mpegURL" bitrate="105" scalable="false" maintainAspectRatio="false"><![CDATA[https://dv.2mdn.net/index.m3u8]]></MediaFile>
+                    </MediaFiles>
+                    </Linear>
+                </Creative>
+            </Creatives>
+        </InLine>
+    </Ad>
+</VAST>
