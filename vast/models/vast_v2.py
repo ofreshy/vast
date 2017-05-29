@@ -227,7 +227,7 @@ VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
 
 
 # These are make functions
-def make_tracking_event(tracking_event_uri, tracking_event_type_value):
+def make_tracking_event(tracking_event_uri, tracking_event_type):
     """
 
     :param tracking_event_uri:
@@ -235,11 +235,11 @@ def make_tracking_event(tracking_event_uri, tracking_event_type_value):
     :return:
     """
     UNICODE_VALIDATOR(tracking_event_uri, "tracking_event_uri")
-    TRACKING_EVENT_TYPE_VALIDATOR(tracking_event_type_value, "tracking_event_type_value")
+    TRACKING_EVENT_TYPE_VALIDATOR(tracking_event_type, "tracking_event_type_value")
 
     return _TrackingEvent(
         tracking_event_uri=tracking_event_uri,
-        tracking_event_type=TrackingEventType(tracking_event_type_value),
+        tracking_event_type=TrackingEventType(tracking_event_type),
     )
 
 

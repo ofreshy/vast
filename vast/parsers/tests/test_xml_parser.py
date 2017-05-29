@@ -166,23 +166,6 @@ class TestInlineWithTrackingEvents(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        """
-         <Tracking event="creativeView"> <![CDATA[ https://mag.dom.com/vidtrk?evt=creativeView ]]> </Tracking>>
-        <Tracking event="start"> <![CDATA[ https://mag.dom.com/vidtrk?evt=start ]]> </Tracking>>
-        <Tracking event="midpoint"> <![CDATA[ https://mag.dom.com/vidtrk?evt=midpoint ]]> </Tracking>>
-        <Tracking event="firstQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=firstQuartile ]]> </Tracking>>
-        <Tracking event="thirdQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=thirdQuartile ]]> </Tracking>>
-        <Tracking event="complete"> <![CDATA[ https://mag.dom.com/vidtrk?evt=complete ]]> </Tracking>>
-        <Tracking event="mute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=mute ]]> </Tracking>>
-        <Tracking event="unmute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=unmute ]]> </Tracking>>
-        <Tracking event="rewind"> <![CDATA[ https://mag.dom.com/vidtrk?evt=rewind ]]> </Tracking>>
-        <Tracking event="resume"> <![CDATA[ https://mag.dom.com/vidtrk?evt=resume ]]> </Tracking>>
-        <Tracking event="fullscreen"> <![CDATA[ https://mag.dom.com/vidtrk?evt=fullscreen ]]> </Tracking>>
-        <Tracking event="collapse"> <![CDATA[ https://mag.dom.com/vidtrk?evt=collapse ]]> </Tracking>>
-        <Tracking event="acceptInvitation"> <![CDATA[ https://mag.dom.com/vidtrk?evt=acceptInvitation ]]> </Tracking>>
-        <Tracking event="close"> <![CDATA[ https://mag.dom.com/vidtrk?evt=close ]]> </Tracking>>
-
-        """
         expected = v2_models.make_vast(
             version=u"2.0",
             ad=v2_models.make_ad(
@@ -205,15 +188,68 @@ class TestInlineWithTrackingEvents(TestCase):
                                         bitrate=300,
                                     ),
                                 ],
+                                tracking_events=[
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=creativeView',
+                                        tracking_event_type=u"creativeView"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=start',
+                                        tracking_event_type=u"start"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=midpoint',
+                                        tracking_event_type=u"midpoint"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=firstQuartile',
+                                        tracking_event_type=u"firstQuartile"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=thirdQuartile',
+                                        tracking_event_type=u"thirdQuartile"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=complete',
+                                        tracking_event_type=u"complete"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=mute',
+                                        tracking_event_type=u"mute"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=unmute',
+                                        tracking_event_type=u"unmute"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=rewind',
+                                        tracking_event_type=u"rewind"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=resume',
+                                        tracking_event_type=u"resume"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=fullscreen',
+                                        tracking_event_type=u"fullscreen"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=collapse',
+                                        tracking_event_type=u"collapse"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=acceptInvitation',
+                                        tracking_event_type=u"acceptInvitation"
+                                    ),
+                                    v2_models.make_tracking_event(
+                                        tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=close',
+                                        tracking_event_type=u"close"
+                                    ),
+                                ],
                             ),
                         ),
                     ],
                 ),
             ),
         )
-
-        print actual
-
-
-
-
+        self.assertEqual(actual, expected)
