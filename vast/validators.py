@@ -90,18 +90,19 @@ def make_compound_validator(*validators):
     return validate
 
 
-STR_VALIDATOR = make_type_validator(str)
-UNICODE_VALIDATOR = make_type_validator(unicode)
-BOOL_VALIDATOR = make_type_validator(bool)
-SEMI_POS_INT_VALIDATOR = make_compound_validator(
-    make_type_validator(int),
-    make_greater_than_validator(-1),
-)
-POS_INT_VALIDATOR = make_compound_validator(
-    make_type_validator(int),
-    make_greater_than_validator(0),
-)
-MIN_MAX_VALIDATOR = make_min_max_validator()
+# TODO write validators so they return the errors
+def make_class_validator(clazz):
+    """
 
-# These are make functions
-IN_VALIDATOR = make_in_validator
+    :param clazz:
+    :return:
+    """
+    msg = "'{name}' must be of {type!r} but got {actual!r} instead."
+
+    def validate(instance, attr_name):
+        attr = getattr(instance, attr_name)
+        if isinstance(attr, clazz):
+            return None
+        return msg.format(name=attr_name, type=clazz, actual=type(attr))
+
+    return validate

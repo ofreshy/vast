@@ -5,23 +5,15 @@ Models for the VAST 2.0 Version
 
 Models are intentionally simple containers with very little logic. 
 
-Models are not meant to be created direcly, but instead use the functions provided. 
+Models are not meant to be created directly, but instead use the functions provided.
 This to make sure that created models adhere to vast spec. 
-Why not use classmethods? 
+Why not use @classmethods?
 Well, it started as such, but since we want to validate on class of other models it became messy. 
 """
 import attr
 from enum import Enum
 
 from vast import validators
-from vast.validators import (
-    BOOL_VALIDATOR,
-    MIN_MAX_VALIDATOR,
-    POS_INT_VALIDATOR,
-    SEMI_POS_INT_VALIDATOR,
-    STR_VALIDATOR,
-    UNICODE_VALIDATOR,
-)
 
 
 class Delivery(Enum):
@@ -40,11 +32,6 @@ class MimeType(Enum):
     WEBM = "video/webm"
     GPP = "video/3gpp"
     MPEG = "application/x-mpegURL"
-
-
-DELIVERY_VALIDATOR = validators.make_in_validator([e.value for e in Delivery])
-API_FRAMEWORK_VALIDATOR = validators.make_in_validator([e.value for e in ApiFramework])
-MIME_TYPE_VALIDATOR = validators.make_in_validator([e.value for e in MimeType])
 
 
 @attr.s(frozen=True)
@@ -129,9 +116,6 @@ class _LinearCreative(object):
     tracking_events = attr.ib()
 
 
-CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
-
-
 @attr.s(frozen=True)
 class _InLine(object):
     """
@@ -166,10 +150,6 @@ class _Wrapper(object):
     creatives = attr.ib()
 
 
-WRAPPER_VALIDATOR = validators.make_type_validator(_Wrapper)
-INLINE_VALIDATOR = validators.make_type_validator(_InLine)
-
-
 @attr.s(frozen=True)
 class _Ad(object):
     """
@@ -178,11 +158,6 @@ class _Ad(object):
     id = attr.ib()
     wrapper = attr.ib()
     inline = attr.ib()
-
-
-AD_VALIDATOR = validators.make_type_validator(_Ad)
-VERSIONS = "2.0",
-VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
 
 
 @attr.s(frozen=True)
@@ -196,6 +171,35 @@ class _Vast(object):
 
 
 # Factory functions
+STR_VALIDATOR = validators.make_type_validator(str)
+UNICODE_VALIDATOR = validators.make_type_validator(unicode)
+BOOL_VALIDATOR = validators.make_type_validator(bool)
+SEMI_POS_INT_VALIDATOR = validators.make_compound_validator(
+    validators.make_type_validator(int),
+    validators.make_greater_than_validator(-1),
+)
+POS_INT_VALIDATOR = validators.make_compound_validator(
+    validators.make_type_validator(int),
+    validators.make_greater_than_validator(0),
+)
+MIN_MAX_VALIDATOR = validators.make_min_max_validator()
+
+IN_VALIDATOR = validators.make_in_validator
+
+DELIVERY_VALIDATOR = validators.make_in_validator([e.value for e in Delivery])
+API_FRAMEWORK_VALIDATOR = validators.make_in_validator([e.value for e in ApiFramework])
+MIME_TYPE_VALIDATOR = validators.make_in_validator([e.value for e in MimeType])
+
+CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
+WRAPPER_VALIDATOR = validators.make_type_validator(_Wrapper)
+INLINE_VALIDATOR = validators.make_type_validator(_InLine)
+
+AD_VALIDATOR = validators.make_type_validator(_Ad)
+VERSIONS = "2.0",
+VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
+
+
+# These are make functions
 def make_media_file(
          asset, delivery, type, width, height,
          codec=None, id=None, bitrate=None,
