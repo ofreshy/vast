@@ -12,11 +12,11 @@ class TestWrapperParser(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.Vast.make(
+        expected = v2_models.make_vast(
             version=u"2.0",
-            ad=v2_models.Ad.make(
+            ad=v2_models.make_ad(
                 id=u"70470",
-                wrapper=v2_models.Wrapper.make(
+                wrapper=v2_models.make_wrapper(
                     ad_system=u"MagU",
                     vast_ad_tag_uri=u"//vast.dv.com/v3/vast?_vast",
                     ad_title=None,
@@ -35,20 +35,20 @@ class TestInlineParser(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.Vast.make(
+        expected = v2_models.make_vast(
             version=u"2.0",
-            ad=v2_models.Ad.make(
+            ad=v2_models.make_ad(
                 id=u"509080ATOU",
-                inline=v2_models.InLine.make(
+                inline=v2_models.make_inline(
                     ad_system=u"MagU",
                     ad_title=u"Centers for Disease Control and Prevention: Who Needs a Flu Vaccine",
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
-                        v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                        v2_models.make_creative(
+                            linear=v2_models.make_linear_creative(
                                 duration=15,
                                 media_files=[
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://www.cdc.gov/flu/video/who-needs-flu-vaccine-15_720px.mp4",
                                         delivery=u"progressive",
                                         type=u"video/mp4",
@@ -70,20 +70,20 @@ class TestInlineParser(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.Vast.make(
+        expected = v2_models.make_vast(
             version=u"2.0",
-            ad=v2_models.Ad.make(
+            ad=v2_models.make_ad(
                 id=u"509080ATOU",
-                inline=v2_models.InLine.make(
+                inline=v2_models.make_inline(
                     ad_system=u"MagU",
                     ad_title=u"Many Media Files",
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
-                        v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                        v2_models.make_creative(
+                            linear=v2_models.make_linear_creative(
                                 duration=15,
                                 media_files=[
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://vpaid.dv.com/s.swf",
                                         delivery=u"progressive",
                                         type=u"application/x-shockwave-flash",
@@ -91,7 +91,7 @@ class TestInlineParser(TestCase):
                                         height=144,
                                         api_framework=u"VPAID",
                                     ),
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://vpaid.dv.com/js/vpaid-wrapper-dv.js",
                                         delivery=u"progressive",
                                         type=u"application/javascript",
@@ -99,7 +99,7 @@ class TestInlineParser(TestCase):
                                         height=144,
                                         api_framework=u"VPAID",
                                     ),
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://dv.2mdn.net/videoplayback/id/f5316658i7/file.3gpp",
                                         delivery=u"streaming",
                                         type=u"video/3gpp",
@@ -110,7 +110,7 @@ class TestInlineParser(TestCase):
                                         scalable=False,
                                         maintain_aspect_ratio=False,
                                     ),
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://dv.2mdn.net/videoplayback/f5316658i78776/file.3gpp",
                                         delivery=u"progressive",
                                         type=u"video/3gpp",
@@ -120,7 +120,7 @@ class TestInlineParser(TestCase):
                                         scalable=False,
                                         maintain_aspect_ratio=False,
                                     ),
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://dv.2mdn.net/videoplayback/id/f5316658cd737d42/file/file.mp4",
                                         delivery=u"progressive",
                                         type=u"video/mp4",
@@ -130,7 +130,7 @@ class TestInlineParser(TestCase):
                                         scalable=False,
                                         maintain_aspect_ratio=False,
                                     ),
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://dv.2mdn.net/videoplayback/id/f5316658cd737d42/file.webm",
                                         delivery=u"progressive",
                                         type=u"video/webm",
@@ -140,7 +140,7 @@ class TestInlineParser(TestCase):
                                         scalable=False,
                                         maintain_aspect_ratio=False,
                                     ),
-                                    v2_models.MediaFile.make(
+                                    v2_models.make_media_file(
                                         asset=u"https://dv.2mdn.net/index.m3u8",
                                         delivery=u"progressive",
                                         type=u"application/x-mpegURL",

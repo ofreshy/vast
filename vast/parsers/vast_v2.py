@@ -17,7 +17,7 @@ def parse_xml(xml_dict):
 def parse_vast(xml_dict):
     required_fields = ("@version", "Ad")
     version, ad = extract_fields(xml_dict, required_fields)
-    return v2_models.Vast.make(
+    return v2_models.make_vast(
         version=version,
         ad=parse_ad(ad),
     )
@@ -26,7 +26,7 @@ def parse_vast(xml_dict):
 def parse_ad(xml_dict):
     one_of_fields = ("Wrapper", "InLine")
     wrapper, inline = extract_fields(xml_dict, one_of_fields, method="one_of")
-    return v2_models.Ad.make(
+    return v2_models.make_ad(
         id=xml_dict.get("@id"),
         inline=parse_inline(inline),
         wrapper=parse_wrapper(wrapper),
@@ -41,7 +41,7 @@ def parse_wrapper(xml_dict):
         required_fields,
     )
 
-    return v2_models.Wrapper.make(
+    return v2_models.make_wrapper(
         ad_system=ad_system,
         ad_title=xml_dict.get("AdTitle"),
         impression=impression,
@@ -61,7 +61,7 @@ def parse_inline(xml_dict):
         msg = "InLine element must have at least one creative in {xml_dict}"
         raise ParseError(msg.format(xml_dict))
 
-    return v2_models.InLine.make(
+    return v2_models.make_inline(
         ad_system=ad_system,
         ad_title=ad_title,
         impression=impression,
@@ -103,7 +103,7 @@ def parse_creative(xml_dict):
     optional_fields = ("@id", "@sequence", "AdId", "@api_framework")
     _id, sequence, ad_id, api_framework = extract_fields(one_of, optional_fields, method="optional")
 
-    return v2_models.Creative.make(
+    return v2_models.make_creative(
         linear=linear,
         non_linear=non_linear,
         companion_ad=companion_ads,
@@ -125,7 +125,7 @@ def parse_linear_creative(xml_dict):
         msg = "Must have at least one media file in {xml_dict}"
         raise ParseError(msg.format(xml_dict=xml_dict))
 
-    return v2_models.LinearCreative.make(
+    return v2_models.make_linear_creative(
         duration=duration,
         media_files=media_files,
         video_clicks=None,
@@ -170,7 +170,7 @@ def parse_media_file(xml_dict):
     if maintain_aspect_ratio is not None:
         maintain_aspect_ratio = to_bool(maintain_aspect_ratio)
 
-    return v2_models.MediaFile.make(
+    return v2_models.make_media_file(
         asset=asset,
         delivery=delivery,
         type=type,
