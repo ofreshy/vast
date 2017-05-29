@@ -106,3 +106,22 @@ def make_class_validator(clazz):
         return msg.format(name=attr_name, type=clazz, actual=type(attr))
 
     return validate
+
+
+def make_enum_validator(enum):
+    """
+
+    :param enum: enum class
+    :return:
+    """
+    allowed_values = set([e.value for e in enum])
+    msg = "Value {attr_value} is not in allowed_values set : ({allowed_values})"
+
+    def validate(instance, attr_name):
+        attr_value = getattr(instance, attr_name)
+        if attr_value in allowed_values:
+            return None
+        return msg.format(attr_value=attr_value, allowed_values=allowed_values)
+
+    return validate
+

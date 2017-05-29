@@ -34,6 +34,31 @@ class MimeType(Enum):
     MPEG = "application/x-mpegURL"
 
 
+class TrackingEventType(Enum):
+    CREATIVE_VIEW = "creativeView"
+    START = "start"
+    FIRST_QUARTILE = "firstQuartile"
+    MID_POINT = "midpoint"
+    THIRD_QUARTILE = "thirdQuartile"
+    COMPLETE = "complete"
+    MUTE = "mute"
+    UNMUTE = "unmute"
+    PAUSE = "pause"
+    REWIND = "rewind"
+    RESUME = "resume"
+    FULL_SCREEN = "fullscreen"
+    EXPAND = "expand"
+    COLLAPSE = "collapse"
+    ACCEPT_INVITATION = "acceptInvitation"
+    CLOSE = "close"
+
+
+@attr.s(frozen=True)
+class _TrackingEvent(object):
+    tracking_event_uri = attr.ib()
+    tracking_event_type = attr.ib()
+
+
 @attr.s(frozen=True)
 class _MediaFile(object):
     """
@@ -190,6 +215,8 @@ DELIVERY_VALIDATOR = validators.make_in_validator([e.value for e in Delivery])
 API_FRAMEWORK_VALIDATOR = validators.make_in_validator([e.value for e in ApiFramework])
 MIME_TYPE_VALIDATOR = validators.make_in_validator([e.value for e in MimeType])
 
+TRACKING_EVENT_TYPE_VALIDATOR = validators.make_in_validator([e.value for e in TrackingEventType])
+TRACKING_EVENT_VALIDATOR = validators.make_type_validator(_TrackingEvent)
 CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
 WRAPPER_VALIDATOR = validators.make_type_validator(_Wrapper)
 INLINE_VALIDATOR = validators.make_type_validator(_InLine)
@@ -200,6 +227,22 @@ VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
 
 
 # These are make functions
+def make_tracking_event(tracking_event_uri, tracking_event_type_value):
+    """
+
+    :param tracking_event_uri:
+    :param tracking_event_type_value:
+    :return:
+    """
+    UNICODE_VALIDATOR(tracking_event_uri, "tracking_event_uri")
+    TRACKING_EVENT_TYPE_VALIDATOR(tracking_event_type_value, "tracking_event_type_value")
+
+    return _TrackingEvent(
+        tracking_event_uri=tracking_event_uri,
+        tracking_event_type=TrackingEventType(tracking_event_type_value),
+    )
+
+
 def make_media_file(
          asset, delivery, type, width, height,
          codec=None, id=None, bitrate=None,
@@ -271,6 +314,26 @@ def make_media_file(
     )
 
 
+def make_linear_creative(
+        duration, media_files,
+        video_clicks=None, ad_parameters=None, tracking_events=None,
+):
+    POS_INT_VALIDATOR(duration, "duration")
+
+    # TODO add check for media files
+
+    if video_clicks is not None:
+        # TODO add checks
+        pass
+    if ad_parameters is not None:
+        # TODO add checks
+        pass
+    if tracking_events is not None:
+        for tracking_event in tracking_events:
+            TRACKING_EVENT_VALIDATOR(tracking_event, "tracking_event")
+    return _LinearCreative(duration, media_files, video_clicks, ad_parameters, tracking_events)
+
+
 def make_creative(
         linear=None, non_linear=None, companion_ad=None,
         id=None, sequence=None, ad_id=None, api_framework=None,
@@ -300,26 +363,6 @@ def make_creative(
         API_FRAMEWORK_VALIDATOR(api_framework, "api_framework")
 
     return _Creative(linear, non_linear, companion_ad, id, sequence, ad_id, api_framework)
-
-
-def make_linear_creative(
-        duration, media_files,
-        video_clicks=None, ad_parameters=None, tracking_events=None,
-):
-    POS_INT_VALIDATOR(duration, "duration")
-
-    # TODO add check for media files
-
-    if video_clicks is not None:
-        # TODO add checks
-        pass
-    if ad_parameters is not None:
-        # TODO add checks
-        pass
-    if tracking_events is not None:
-        # TODO add checks
-        pass
-    return _LinearCreative(duration, media_files, video_clicks, ad_parameters, tracking_events)
 
 
 def make_inline(ad_system, ad_title, impression, creatives):

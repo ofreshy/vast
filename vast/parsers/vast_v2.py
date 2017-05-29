@@ -119,19 +119,40 @@ def parse_linear_creative(xml_dict):
     required_fields = ("Duration", "MediaFiles")
     duration, media_files = extract_fields(xml_dict, required_fields)
 
-    duration = parse_duration(duration)
     media_files = parse_media_files(media_files)
     if not media_files:
         msg = "Must have at least one media file in {xml_dict}"
         raise ParseError(msg.format(xml_dict=xml_dict))
 
+    tracking_events = xml_dict.get("TrackingEvents")
+
     return v2_models.make_linear_creative(
-        duration=duration,
+        duration=parse_duration(duration),
         media_files=media_files,
         video_clicks=None,
         ad_parameters=None,
-        tracking_events=None,
+        tracking_events=parse_tracking_creatives(tracking_events),
     )
+
+
+@accept_none
+def parse_tracking_creatives(xml_dict):
+    tracking_events = xml_dict["Tracking"]
+    # There is only one
+    if isinstance(tracking_events, dict):
+        return [parse_tracking_event(tracking_events)]
+
+    # There are several
+    if isinstance(tracking_events, list):
+        return [parse_tracking_event(t) for t in tracking_events]
+
+    return None
+
+
+def parse_tracking_event(xml_dict):
+    required_fields = ("@event", "#text")
+    event, uri = extract_fields(xml_dict, required_fields)
+    return v2_models.make_tracking_event(uri, event)
 
 
 @accept_none

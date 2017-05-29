@@ -159,3 +159,61 @@ class TestInlineParser(TestCase):
         )
         self.assertEqual(actual, expected)
 
+
+class TestInlineWithTrackingEvents(TestCase):
+    def test_xml_with_tracking(self):
+        with open(resources.INLINE_WITH_TRACKING_EVENTS_XML, "r") as fp:
+            xml_string = fp.read()
+
+        actual = xml_parser.from_xml_string(xml_string)
+        """
+         <Tracking event="creativeView"> <![CDATA[ https://mag.dom.com/vidtrk?evt=creativeView ]]> </Tracking>>
+        <Tracking event="start"> <![CDATA[ https://mag.dom.com/vidtrk?evt=start ]]> </Tracking>>
+        <Tracking event="midpoint"> <![CDATA[ https://mag.dom.com/vidtrk?evt=midpoint ]]> </Tracking>>
+        <Tracking event="firstQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=firstQuartile ]]> </Tracking>>
+        <Tracking event="thirdQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=thirdQuartile ]]> </Tracking>>
+        <Tracking event="complete"> <![CDATA[ https://mag.dom.com/vidtrk?evt=complete ]]> </Tracking>>
+        <Tracking event="mute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=mute ]]> </Tracking>>
+        <Tracking event="unmute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=unmute ]]> </Tracking>>
+        <Tracking event="rewind"> <![CDATA[ https://mag.dom.com/vidtrk?evt=rewind ]]> </Tracking>>
+        <Tracking event="resume"> <![CDATA[ https://mag.dom.com/vidtrk?evt=resume ]]> </Tracking>>
+        <Tracking event="fullscreen"> <![CDATA[ https://mag.dom.com/vidtrk?evt=fullscreen ]]> </Tracking>>
+        <Tracking event="collapse"> <![CDATA[ https://mag.dom.com/vidtrk?evt=collapse ]]> </Tracking>>
+        <Tracking event="acceptInvitation"> <![CDATA[ https://mag.dom.com/vidtrk?evt=acceptInvitation ]]> </Tracking>>
+        <Tracking event="close"> <![CDATA[ https://mag.dom.com/vidtrk?evt=close ]]> </Tracking>>
+
+        """
+        expected = v2_models.make_vast(
+            version=u"2.0",
+            ad=v2_models.make_ad(
+                id=u"509080ATOU",
+                inline=v2_models.make_inline(
+                    ad_system=u"MagU",
+                    ad_title=u"Inline with Tracking Events",
+                    impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
+                    creatives=[
+                        v2_models.make_creative(
+                            linear=v2_models.make_linear_creative(
+                                duration=15,
+                                media_files=[
+                                    v2_models.make_media_file(
+                                        asset=u"https://www.cdc.gov/flu/video/who-needs-flu-vaccine-15_720px.mp4",
+                                        delivery=u"progressive",
+                                        type=u"video/mp4",
+                                        width=720,
+                                        height=420,
+                                        bitrate=300,
+                                    ),
+                                ],
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+        )
+
+        print actual
+
+
+
+
