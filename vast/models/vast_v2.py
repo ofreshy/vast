@@ -16,6 +16,11 @@ from enum import Enum
 from vast import validators
 
 
+def validate():
+    # TODO fill this in
+    pass
+
+
 class Delivery(Enum):
     STREAMING = "streaming"
     PROGRESSIVE = "progressive"
@@ -23,6 +28,13 @@ class Delivery(Enum):
 
 class ApiFramework(Enum):
     VPAID = "VPAID"
+
+    @classmethod
+    def from_string(cls, v):
+        for e in cls:
+            if str(v).upper() == e.value.upper():
+                return e
+        return None
 
 
 class MimeType(Enum):
@@ -32,6 +44,13 @@ class MimeType(Enum):
     WEBM = "video/webm"
     GPP = "video/3gpp"
     MPEG = "application/x-mpegURL"
+
+    @classmethod
+    def from_string(cls, v):
+        for e in cls:
+            if str(v).upper() == e.value.upper():
+                return e
+        return None
 
 
 class TrackingEventType(Enum):
@@ -51,6 +70,13 @@ class TrackingEventType(Enum):
     COLLAPSE = "collapse"
     ACCEPT_INVITATION = "acceptInvitation"
     CLOSE = "close"
+
+    @classmethod
+    def from_string(cls, v):
+        for e in cls:
+            if str(v).upper() == e.value.upper():
+                return e
+        return None
 
 
 @attr.s(frozen=True)
@@ -140,6 +166,10 @@ class _LinearCreative(object):
     ad_parameters = attr.ib()
     tracking_events = attr.ib()
 
+    def as_dict(self):
+        from collections import OrderedDict
+        return attr.asdict(self, dict_factory=OrderedDict, retain_collection_types=True)
+
 
 @attr.s(frozen=True)
 class _InLine(object):
@@ -211,11 +241,6 @@ MIN_MAX_VALIDATOR = validators.make_min_max_validator()
 
 IN_VALIDATOR = validators.make_in_validator
 
-DELIVERY_VALIDATOR = validators.make_in_validator([e.value for e in Delivery])
-API_FRAMEWORK_VALIDATOR = validators.make_in_validator([e.value for e in ApiFramework])
-MIME_TYPE_VALIDATOR = validators.make_in_validator([e.value for e in MimeType])
-
-TRACKING_EVENT_TYPE_VALIDATOR = validators.make_in_validator([e.value for e in TrackingEventType])
 TRACKING_EVENT_VALIDATOR = validators.make_type_validator(_TrackingEvent)
 CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
 WRAPPER_VALIDATOR = validators.make_type_validator(_Wrapper)
@@ -231,15 +256,14 @@ def make_tracking_event(tracking_event_uri, tracking_event_type):
     """
 
     :param tracking_event_uri:
-    :param tracking_event_type_value:
+    :param tracking_event_type:
     :return:
     """
     UNICODE_VALIDATOR(tracking_event_uri, "tracking_event_uri")
-    TRACKING_EVENT_TYPE_VALIDATOR(tracking_event_type, "tracking_event_type_value")
 
     return _TrackingEvent(
         tracking_event_uri=tracking_event_uri,
-        tracking_event_type=TrackingEventType(tracking_event_type),
+        tracking_event_type=TrackingEventType.from_string(tracking_event_type),
     )
 
 
@@ -271,8 +295,6 @@ def make_media_file(
     :return: 
     """
     UNICODE_VALIDATOR(asset, "asset")
-    DELIVERY_VALIDATOR(delivery, "delivery")
-    MIME_TYPE_VALIDATOR(type, "type")
     width, height = map(int, (width, height))
     SEMI_POS_INT_VALIDATOR(width, "width")
     SEMI_POS_INT_VALIDATOR(height, "height")
@@ -303,7 +325,9 @@ def make_media_file(
         UNICODE_VALIDATOR(id, "id")
 
     if api_framework is not None:
-        API_FRAMEWORK_VALIDATOR(api_framework, "api_framework")
+        api_framework = ApiFramework.from_string(api_framework)
+        if api_framework is None:
+            raise ValueError
 
     return _MediaFile(
         asset,
@@ -360,7 +384,9 @@ def make_creative(
     if ad_id is not None:
         STR_VALIDATOR(ad_id, "ad_id")
     if api_framework is not None:
-        API_FRAMEWORK_VALIDATOR(api_framework, "api_framework")
+        api_framework = ApiFramework.from_string(api_framework)
+        if api_framework is None:
+            raise ValueError
 
     return _Creative(linear, non_linear, companion_ad, id, sequence, ad_id, api_framework)
 
