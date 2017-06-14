@@ -152,7 +152,10 @@ def parse_tracking_creatives(xml_dict):
 def parse_tracking_event(xml_dict):
     required_fields = ("@event", "#text")
     event, uri = extract_fields(xml_dict, required_fields)
-    return v2_models.make_tracking_event(uri, event)
+    return v2_models.make_tracking_event(
+        tracking_event_uri=uri,
+        tracking_event_type=event,
+    )
 
 
 @accept_none
@@ -180,7 +183,7 @@ def parse_media_file(xml_dict):
     if delivery == "progressive" and type not in no_bitrate_types and bitrate is None:
         msg = "Bitrate must be declared when delivery is progressive in {xml_dict}"
         raise ParseError(msg.format(xml_dict=xml_dict))
-    if delivery == "streaming" and  type not in no_bitrate_types and (min_bitrate is None or max_bitrate is None):
+    if delivery == "streaming" and type not in no_bitrate_types and (min_bitrate is None or max_bitrate is None):
         msg = "Min and Max Bitrate must be declared when delivery is streaming in {xml_dict}"
         raise ParseError(msg.format(xml_dict=xml_dict))
 

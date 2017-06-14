@@ -8,6 +8,10 @@ _PARSERS = {
     u"2.0": vast_v2.parse_xml
 }
 
+def from_xml_file(xml_file, **kwargs):
+    with open(xml_file, "r") as xml_file_like_object:
+        return _parse(xml_file_like_object, **kwargs)
+
 
 def from_xml_string(xml_input, **kwargs):
     """
@@ -17,7 +21,11 @@ def from_xml_string(xml_input, **kwargs):
     :param kwargs: pass on to xmltodict
     :return: parsed Vast object
     """
-    root = xmltodict.parse(xml_input, **kwargs)
+    return _parse(xml_input, **kwargs)
+
+
+def _parse(xml_string_or_file_like_object, **kwargs):
+    root = xmltodict.parse(xml_string_or_file_like_object, **kwargs)
     if "VAST" not in root:
         raise ParseError("root must have VAST element")
     vast = root["VAST"]

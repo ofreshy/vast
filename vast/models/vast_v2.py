@@ -14,16 +14,19 @@ import attr
 from enum import Enum
 
 from vast import validators
-
-
-def validate():
-    # TODO fill this in
-    pass
+from vast.models.shared import pre_make
 
 
 class Delivery(Enum):
     STREAMING = "streaming"
     PROGRESSIVE = "progressive"
+
+    @classmethod
+    def from_string(cls, v):
+        for e in cls:
+            if str(v).upper() == e.value.upper():
+                return e
+        return None
 
 
 class ApiFramework(Enum):
@@ -252,18 +255,21 @@ VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
 
 
 # These are make functions
-def make_tracking_event(tracking_event_uri, tracking_event_type):
+@pre_make(
+    required=("tracking_event_uri", "tracking_event_type"),
+    convertors=[("tracking_event_uri", unicode)],
+    enums=[("tracking_event_type", TrackingEventType)],
+)
+def make_tracking_event(tracking_event_uri=None, tracking_event_type=None):
     """
 
     :param tracking_event_uri:
     :param tracking_event_type:
     :return:
     """
-    UNICODE_VALIDATOR(tracking_event_uri, "tracking_event_uri")
-
     return _TrackingEvent(
         tracking_event_uri=tracking_event_uri,
-        tracking_event_type=TrackingEventType.from_string(tracking_event_type),
+        tracking_event_type=tracking_event_type,
     )
 
 
@@ -338,13 +344,19 @@ def make_media_file(
     )
 
 
+@pre_make(
+    required=["duration", "media_files"],
+    convertors=[("duration", int)],
+    classes=[
+        ("media_files", _MediaFile, True),
+        ("tracking_events", _TrackingEvent, True),
+    ]
+)
 def make_linear_creative(
-        duration, media_files,
+        duration=None, media_files=None,
         video_clicks=None, ad_parameters=None, tracking_events=None,
 ):
     POS_INT_VALIDATOR(duration, "duration")
-
-    # TODO add check for media files
 
     if video_clicks is not None:
         # TODO add checks
@@ -352,9 +364,6 @@ def make_linear_creative(
     if ad_parameters is not None:
         # TODO add checks
         pass
-    if tracking_events is not None:
-        for tracking_event in tracking_events:
-            TRACKING_EVENT_VALIDATOR(tracking_event, "tracking_event")
     return _LinearCreative(duration, media_files, video_clicks, ad_parameters, tracking_events)
 
 
@@ -391,17 +400,12 @@ def make_creative(
     return _Creative(linear, non_linear, companion_ad, id, sequence, ad_id, api_framework)
 
 
+@pre_make(
+    required=("ad_system", "ad_title", "impression", "creatives"),
+    convertors=[("ad_system", unicode), ("ad_title", unicode), ("impression", unicode)],
+    classes=[("creatives", _Creative, True)],
+)
 def make_inline(ad_system, ad_title, impression, creatives):
-    UNICODE_VALIDATOR(ad_system, "ad_system")
-    UNICODE_VALIDATOR(ad_title, "ad_title")
-    UNICODE_VALIDATOR(impression, "impression")
-    if not creatives:
-        raise ValueError("Creatives must be provided")
-    if not isinstance(creatives, (list, set, tuple)):
-        raise TypeError
-    for creative in creatives:
-        CREATIVE_VALIDATOR(creative, "creative")
-
     return _InLine(ad_system, ad_title, impression, creatives)
 
 
@@ -424,6 +428,11 @@ def make_wrapper(
     return _Wrapper(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)
 
 
+@pre_make(
+    required=["id"],
+    one_ofs=[("wrapper", "inline")],
+    convertors=[("id", unicode)]
+)
 def make_ad(id, wrapper=None, inline=None):
     """
     
@@ -432,14 +441,6 @@ def make_ad(id, wrapper=None, inline=None):
     :param inline: 
     :return: 
     """
-    UNICODE_VALIDATOR(id, "id")
-    if wrapper is not None:
-        WRAPPER_VALIDATOR(wrapper, "wrapper")
-    elif inline is not None:
-        INLINE_VALIDATOR(inline, "inline")
-    else:
-        raise ValueError("Must provide either wrapper or inline")
-
     return _Ad(id, wrapper, inline)
 
 
