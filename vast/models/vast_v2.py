@@ -17,6 +17,7 @@ from vast import validators
 from vast.models.shared import pre_make
 
 
+# TODO make the from_string method a closure or shared method
 class Delivery(Enum):
     STREAMING = "streaming"
     PROGRESSIVE = "progressive"
