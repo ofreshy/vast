@@ -188,10 +188,11 @@ def make_class_checker(classes, required):
             value = args_dict.get(attr_name)
             if value is None:
                 if attr_name in required:
+                    # This will add an error
                     check_for_class(value, clazz)
+                else:
+                    found[attr_name] = value
                 continue
-
-            found[attr_name] = value
 
             if not container_type:
                 check_for_class(value, clazz)
@@ -329,7 +330,7 @@ def with_checker_converter():
     """
 
     def _add_checker_converter(cls):
-        required = getattr(cls, "REQUIRED", frozenset())
+        required = frozenset(getattr(cls, "REQUIRED", []))
         ccs = (
             make_required_checker(required),
             make_some_of_checker(getattr(cls, "SOME_OFS", [])),
@@ -339,7 +340,7 @@ def with_checker_converter():
         )
 
         def _check_and_convert(args_dict):
-            args = {}
+            args = args_dict.copy()
             errors = []
             for cc in ccs:
                 f, e = cc(args_dict)

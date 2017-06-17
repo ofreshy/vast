@@ -41,11 +41,11 @@ def parse_wrapper(xml_dict):
         required_fields,
     )
 
-    return v2_models.make_wrapper(
+    return v2_models.Wrapper.make(
         ad_system=ad_system,
+        vast_ad_tag_uri=vast_ad_tag_uri,
         ad_title=xml_dict.get("AdTitle"),
         impression=impression,
-        vast_ad_tag_uri=vast_ad_tag_uri,
         error=xml_dict.get("Error"),
         creatives=parse_creatives(xml_dict.get("Creatives")),
     )
@@ -61,7 +61,7 @@ def parse_inline(xml_dict):
         msg = "InLine element must have at least one creative in {xml_dict}"
         raise ParseError(msg.format(xml_dict))
 
-    return v2_models.make_inline(
+    return v2_models.Inline.make(
         ad_system=ad_system,
         ad_title=ad_title,
         impression=impression,
@@ -126,7 +126,7 @@ def parse_linear_creative(xml_dict):
 
     tracking_events = xml_dict.get("TrackingEvents")
 
-    return v2_models.make_linear_creative(
+    return v2_models.LinearCreative.make(
         duration=parse_duration(duration),
         media_files=media_files,
         video_clicks=None,

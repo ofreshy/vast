@@ -6,7 +6,7 @@ from vast.models.tests.vast_v2_model_mixin import VastModelMixin
 
 class TestAsDict(unittest.TestCase):
     def test_linear(self):
-        linear = vast_v2.make_linear_creative(
+        linear = vast_v2.LinearCreative.make(
             duration=15,
             media_files=(
                 vast_v2.make_media_file(

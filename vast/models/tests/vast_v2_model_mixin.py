@@ -33,7 +33,7 @@ class VastModelMixin(object):
             error=u"https://www.mag_error.com",
             creatives=None,
     ):
-        return vast_v2.make_wrapper(
+        return vast_v2.Wrapper.make(
             ad_system=ad_system,
             vast_ad_tag_uri=vast_ad_tag_uri,
             ad_title=ad_title,

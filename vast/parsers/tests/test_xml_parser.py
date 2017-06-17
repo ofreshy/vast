@@ -16,7 +16,7 @@ class TestWrapperParser(TestCase):
             version=u"2.0",
             ad=v2_models.Ad.make_wrapper(
                 id=u"70470",
-                wrapper=v2_models.make_wrapper(
+                wrapper=v2_models.Wrapper.make(
                     ad_system=u"MagU",
                     vast_ad_tag_uri=u"//vast.dv.com/v3/vast?_vast",
                     ad_title=None,
@@ -39,13 +39,13 @@ class TestInlineParser(TestCase):
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
                 id=u"509080ATOU",
-                inline=v2_models.make_inline(
+                inline=v2_models.Inline.make(
                     ad_system=u"MagU",
                     ad_title=u"Centers for Disease Control and Prevention: Who Needs a Flu Vaccine",
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.make_creative(
-                            linear=v2_models.make_linear_creative(
+                            linear=v2_models.LinearCreative.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.make_media_file(
@@ -74,13 +74,13 @@ class TestInlineParser(TestCase):
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
                 id=u"509080ATOU",
-                inline=v2_models.make_inline(
+                inline=v2_models.Inline.make(
                     ad_system=u"MagU",
                     ad_title=u"Many Media Files",
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.make_creative(
-                            linear=v2_models.make_linear_creative(
+                            linear=v2_models.LinearCreative.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.make_media_file(
@@ -170,13 +170,13 @@ class TestInlineWithTrackingEvents(TestCase):
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
                 id=u"509080ATOU",
-                inline=v2_models.make_inline(
+                inline=v2_models.Inline.make(
                     ad_system=u"MagU",
                     ad_title=u"Inline with Tracking Events",
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.make_creative(
-                            linear=v2_models.make_linear_creative(
+                            linear=v2_models.LinearCreative.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.make_media_file(

@@ -136,9 +136,9 @@ class _Creative(object):
     ad_id = attr.ib()
     api_framework = attr.ib()
 
-
+@with_checker_converter()
 @attr.s(frozen=True)
-class _LinearCreative(object):
+class LinearCreative(object):
     """
     The most common type of video advertisement trafficked in the industry is a “linear ad”,
     which is an ad  that displays in the same area as the content but not at the same time as the content.
@@ -151,7 +151,14 @@ class _LinearCreative(object):
     Additionally three optional child elements are offered: 
     <VideoClicks>, <AdParameters> and <TrackingEvents>. 
     """
-    # REQUIRED
+    REQUIRED = ("duration", "media_files")
+    CONVERTERS = [(int, ("duration", ))]
+    CLASSES = [
+        ("media_files", _MediaFile, True),
+        ("tracking_events", TrackingEvent, True),
+    ]
+
+
     duration = attr.ib()
     media_files = attr.ib()
 
@@ -160,13 +167,30 @@ class _LinearCreative(object):
     ad_parameters = attr.ib()
     tracking_events = attr.ib()
 
+    @classmethod
+    def make(cls, duration, media_files, video_clicks=None, ad_parameters=None, tracking_events=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                duration=duration,
+                media_files=media_files,
+                video_clicks=video_clicks,
+                ad_parameters=ad_parameters,
+                tracking_events=tracking_events,
+            ),
+        )
+        POS_INT_VALIDATOR(duration, "duration")
+        return instance
+
     def as_dict(self):
         from collections import OrderedDict
         return attr.asdict(self, dict_factory=OrderedDict, retain_collection_types=True)
 
 
+
+
+@with_checker_converter()
 @attr.s(frozen=True)
-class _InLine(object):
+class Inline(object):
     """
     2.2.4 The <InLine> Element
     The last ad server in the ad supply chain serves an <InLine> element. 
@@ -179,24 +203,59 @@ class _InLine(object):
     should request when the first frame of the ad is displayed
     • <Creatives>: the container for one or more <Creative> elements
     """
-    # REQUIRED
+    REQUIRED = ("ad_system", "ad_title", "impression", "creatives")
+    CONVERTERS = [(unicode, ("ad_system", "ad_title", "impression"))]
+    CLASSES = [("creatives", _Creative, True)]
+
     ad_system = attr.ib()
     ad_title = attr.ib()
     impression = attr.ib()
     creatives = attr.ib()
 
+    @classmethod
+    def make(cls, ad_system, ad_title, impression, creatives):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                ad_system=ad_system,
+                ad_title=ad_title,
+                impression=impression,
+                creatives=creatives,
+            ),
+        )
+        return instance
 
+
+
+@with_checker_converter()
 @attr.s(frozen=True)
-class _Wrapper(object):
+class Wrapper(object):
     """
     
     """
+    REQUIRED = ("ad_system", "vast_ad_tag_uri")
+    CONVERTERS= [(unicode, ("ad_system", "ad_title", "impression", "error"))]
+    CLASSES = [("creatives", _Creative, True)]
+
     ad_system = attr.ib()
     vast_ad_tag_uri = attr.ib()
     ad_title = attr.ib()
     impression = attr.ib()
     error = attr.ib()
     creatives = attr.ib()
+
+    @classmethod
+    def make(cls, ad_system, vast_ad_tag_uri, ad_title=None, impression=None, error=None, creatives=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                ad_system=ad_system,
+                vast_ad_tag_uri=vast_ad_tag_uri,
+                ad_title=ad_title,
+                impression=impression,
+                error=error,
+                creatives=creatives,
+            ),
+        )
+        return instance
 
 
 @with_checker_converter()
@@ -280,8 +339,8 @@ IN_VALIDATOR = validators.make_in_validator
 
 TRACKING_EVENT_VALIDATOR = validators.make_type_validator(TrackingEvent)
 CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
-WRAPPER_VALIDATOR = validators.make_type_validator(_Wrapper)
-INLINE_VALIDATOR = validators.make_type_validator(_InLine)
+WRAPPER_VALIDATOR = validators.make_type_validator(Wrapper)
+INLINE_VALIDATOR = validators.make_type_validator(Inline)
 
 VERSIONS = "2.0",
 VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
@@ -363,29 +422,6 @@ def make_media_file(
     )
 
 
-@pre_make(
-    required=["duration", "media_files"],
-    convertors=[("duration", int)],
-    classes=[
-        ("media_files", _MediaFile, True),
-        ("tracking_events", TrackingEvent, True),
-    ]
-)
-def make_linear_creative(
-        duration=None, media_files=None,
-        video_clicks=None, ad_parameters=None, tracking_events=None,
-):
-    POS_INT_VALIDATOR(duration, "duration")
-
-    if video_clicks is not None:
-        # TODO add checks
-        pass
-    if ad_parameters is not None:
-        # TODO add checks
-        pass
-    return _LinearCreative(duration, media_files, video_clicks, ad_parameters, tracking_events)
-
-
 # TODO add a pre make here
 def make_creative(
         linear=None, non_linear=None, companion_ad=None,
@@ -418,24 +454,3 @@ def make_creative(
             raise ValueError
 
     return _Creative(linear, non_linear, companion_ad, id, sequence, ad_id, api_framework)
-
-
-@pre_make(
-    required=("ad_system", "ad_title", "impression", "creatives"),
-    convertors=[("ad_system", unicode), ("ad_title", unicode), ("impression", unicode)],
-    classes=[("creatives", _Creative, True)],
-)
-def make_inline(ad_system, ad_title, impression, creatives):
-    return _InLine(ad_system, ad_title, impression, creatives)
-
-
-@pre_make(
-    required=("ad_system", "vast_ad_tag_uri"),
-    convertors=[("ad_system", unicode), ("ad_title", unicode), ("impression", unicode), ("error", unicode)],
-    classes=[("creatives", _Creative, True)],
-)
-def make_wrapper(
-        ad_system, vast_ad_tag_uri,
-        ad_title=None, impression=None, error=None, creatives=None,
-):
-    return _Wrapper(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)
