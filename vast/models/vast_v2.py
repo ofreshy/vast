@@ -17,28 +17,14 @@ from vast import validators
 from vast.models.shared import pre_make, with_checker_converter
 
 
-# TODO make the from_string method a closure or shared method
 class Delivery(Enum):
     STREAMING = "streaming"
     PROGRESSIVE = "progressive"
-
-    @classmethod
-    def from_string(cls, v):
-        for e in cls:
-            if str(v).upper() == e.value.upper():
-                return e
-        return None
 
 
 class ApiFramework(Enum):
     VPAID = "VPAID"
 
-    @classmethod
-    def from_string(cls, v):
-        for e in cls:
-            if str(v).upper() == e.value.upper():
-                return e
-        return None
 
 
 class MimeType(Enum):
@@ -48,13 +34,6 @@ class MimeType(Enum):
     WEBM = "video/webm"
     GPP = "video/3gpp"
     MPEG = "application/x-mpegURL"
-
-    @classmethod
-    def from_string(cls, v):
-        for e in cls:
-            if str(v).upper() == e.value.upper():
-                return e
-        return None
 
 
 class TrackingEventType(Enum):
@@ -74,13 +53,6 @@ class TrackingEventType(Enum):
     COLLAPSE = "collapse"
     ACCEPT_INVITATION = "acceptInvitation"
     CLOSE = "close"
-
-    @classmethod
-    def from_string(cls, v):
-        for e in cls:
-            if str(v).upper() == e.value.upper():
-                return e
-        return None
 
 
 
@@ -227,24 +199,67 @@ class _Wrapper(object):
     creatives = attr.ib()
 
 
+@with_checker_converter()
 @attr.s(frozen=True)
-class _Ad(object):
+class Ad(object):
     """
     
     """
+    REQUIRED = ("id", )
+    SOME_OFS = [(("wrapper", "inline"), 1)]
+    CONVERTERS = [(unicode, ("id", ))]
+
     id = attr.ib()
     wrapper = attr.ib()
     inline = attr.ib()
 
+    @classmethod
+    def make(cls, id, wrapper=None, inline=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                id=id,
+                wrapper=wrapper,
+                inline=inline,
+            ),
+        )
+        return instance
 
+    @classmethod
+    def make_wrapper(cls, id, wrapper):
+        return cls.make(id=id, wrapper=wrapper)
+
+    @classmethod
+    def make_inline(cls, id, inline):
+        return cls.make(id=id, inline=inline)
+
+
+@with_checker_converter()
 @attr.s(frozen=True)
-class _Vast(object):
+class Vast(object):
     """
     The Document Root Element
     """
+    REQUIRED = ("version", "ad")
+    CLASSES = [("ad", Ad, False)]
 
     version = attr.ib()
     ad = attr.ib()
+
+    @classmethod
+    def make(cls, version, ad):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                version=version,
+                ad=ad,
+            ),
+        )
+        if version != "2.0":
+            msg = "version must be 2.0 for vast 2 instance and was '{version}'"
+            raise ValueError(msg.format(version=version))
+
+        return instance
+
+
 
 
 # Factory functions
@@ -270,24 +285,6 @@ INLINE_VALIDATOR = validators.make_type_validator(_InLine)
 
 VERSIONS = "2.0",
 VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
-
-
-# These are make functions
-@pre_make(
-    required=TrackingEvent.REQUIRED,
-    convertors=TrackingEvent.CONVERTERS,
-)
-def make_tracking_event(tracking_event_uri=None, tracking_event_type=None):
-    """
-
-    :param tracking_event_uri:
-    :param tracking_event_type:
-    :return:
-    """
-    return TrackingEvent(
-        tracking_event_uri=tracking_event_uri,
-        tracking_event_type=tracking_event_type,
-    )
 
 
 # @pre_make(
@@ -353,7 +350,7 @@ def make_media_file(
         UNICODE_VALIDATOR(id, "id")
 
     if api_framework is not None:
-        api_framework = ApiFramework.from_string(api_framework)
+        api_framework = ApiFramework(api_framework)
         if api_framework is None:
             raise ValueError
 
@@ -442,28 +439,3 @@ def make_wrapper(
         ad_title=None, impression=None, error=None, creatives=None,
 ):
     return _Wrapper(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)
-
-
-@pre_make(
-    required=["id"],
-    one_ofs=[("wrapper", "inline")],
-    convertors=[("id", unicode)]
-)
-def make_ad(id, wrapper=None, inline=None):
-    """
-    
-    :param id: 
-    :param wrapper: 
-    :param inline: 
-    :return: 
-    """
-    return _Ad(id, wrapper, inline)
-
-
-@pre_make(
-    required=("version", "ad"),
-    classes=[("ad", _Ad, False)],
-)
-def make_vast(version, ad):
-    VERSION_VALIDATOR(version, "version")
-    return _Vast(version, ad)

@@ -3,17 +3,25 @@ from vast.models import vast_v2
 
 class VastModelMixin(object):
     def make_wrapper_ad(self, wrapper=None):
-        wrapper = wrapper or self.make_wrapper()
-        return vast_v2.make_ad(
+        return vast_v2.Ad.make_wrapper(
             id="ad_wrapper_id",
-            wrapper=wrapper,
+            wrapper=wrapper or self.make_wrapper(),
         )
 
     def make_inline_ad(self, inline=None):
-        inline = inline or self.make_inline()
-        return vast_v2.make_ad(
+        return vast_v2.Ad.make_inline(
             id="ad_inline_id",
-            inline=inline,
+            inline=inline or self.make_inline(),
+        )
+
+    @staticmethod
+    def make_tracking_event(
+            tracking_event_uri="https://http.mag.u",
+            tracking_event_type="close",
+    ):
+        return vast_v2.TrackingEvent.make(
+            tracking_event_uri=tracking_event_uri,
+            tracking_event_type=tracking_event_type,
         )
 
     @staticmethod

@@ -17,7 +17,7 @@ def parse_xml(xml_dict):
 def parse_vast(xml_dict):
     required_fields = ("@version", "Ad")
     version, ad = extract_fields(xml_dict, required_fields)
-    return v2_models.make_vast(
+    return v2_models.Vast.make(
         version=version,
         ad=parse_ad(ad),
     )
@@ -26,7 +26,7 @@ def parse_vast(xml_dict):
 def parse_ad(xml_dict):
     one_of_fields = ("Wrapper", "InLine")
     wrapper, inline = extract_fields(xml_dict, one_of_fields, method="one_of")
-    return v2_models.make_ad(
+    return v2_models.Ad.make(
         id=xml_dict.get("@id"),
         inline=parse_inline(inline),
         wrapper=parse_wrapper(wrapper),
@@ -152,7 +152,7 @@ def parse_tracking_creatives(xml_dict):
 def parse_tracking_event(xml_dict):
     required_fields = ("@event", "#text")
     event, uri = extract_fields(xml_dict, required_fields)
-    return v2_models.make_tracking_event(
+    return v2_models.TrackingEvent.make(
         tracking_event_uri=uri,
         tracking_event_type=event,
     )

@@ -156,8 +156,9 @@ def make_some_of_checker(some_ofs):
                     )
                 )
             else:
-                attr_name = existing[0]
-                found[attr_name] = args_dict[attr_name]
+                found.update(
+                    {attr_name:args_dict.get(attr_name) for attr_name in attr_names}
+                )
         return found, errors
 
     return checker

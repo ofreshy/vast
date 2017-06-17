@@ -12,9 +12,9 @@ class TestWrapperParser(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.make_vast(
+        expected = v2_models.Vast.make(
             version=u"2.0",
-            ad=v2_models.make_ad(
+            ad=v2_models.Ad.make_wrapper(
                 id=u"70470",
                 wrapper=v2_models.make_wrapper(
                     ad_system=u"MagU",
@@ -35,9 +35,9 @@ class TestInlineParser(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.make_vast(
+        expected = v2_models.Vast.make(
             version=u"2.0",
-            ad=v2_models.make_ad(
+            ad=v2_models.Ad.make_inline(
                 id=u"509080ATOU",
                 inline=v2_models.make_inline(
                     ad_system=u"MagU",
@@ -70,9 +70,9 @@ class TestInlineParser(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.make_vast(
+        expected = v2_models.Vast.make(
             version=u"2.0",
-            ad=v2_models.make_ad(
+            ad=v2_models.Ad.make_inline(
                 id=u"509080ATOU",
                 inline=v2_models.make_inline(
                     ad_system=u"MagU",
@@ -166,9 +166,9 @@ class TestInlineWithTrackingEvents(TestCase):
             xml_string = fp.read()
 
         actual = xml_parser.from_xml_string(xml_string)
-        expected = v2_models.make_vast(
+        expected = v2_models.Vast.make(
             version=u"2.0",
-            ad=v2_models.make_ad(
+            ad=v2_models.Ad.make_inline(
                 id=u"509080ATOU",
                 inline=v2_models.make_inline(
                     ad_system=u"MagU",
@@ -189,59 +189,59 @@ class TestInlineWithTrackingEvents(TestCase):
                                     ),
                                 ],
                                 tracking_events=[
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=creativeView',
                                         tracking_event_type=u"creativeView"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=start',
                                         tracking_event_type=u"start"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=midpoint',
                                         tracking_event_type=u"midpoint"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=firstQuartile',
                                         tracking_event_type=u"firstQuartile"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=thirdQuartile',
                                         tracking_event_type=u"thirdQuartile"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=complete',
                                         tracking_event_type=u"complete"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=mute',
                                         tracking_event_type=u"mute"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=unmute',
                                         tracking_event_type=u"unmute"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=rewind',
                                         tracking_event_type=u"rewind"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=resume',
                                         tracking_event_type=u"resume"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=fullscreen',
                                         tracking_event_type=u"fullscreen"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=collapse',
                                         tracking_event_type=u"collapse"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=acceptInvitation',
                                         tracking_event_type=u"acceptInvitation"
                                     ),
-                                    v2_models.make_tracking_event(
+                                    v2_models.TrackingEvent.make(
                                         tracking_event_uri=u'https://mag.dom.com/vidtrk?evt=close',
                                         tracking_event_type=u"close"
                                     ),
