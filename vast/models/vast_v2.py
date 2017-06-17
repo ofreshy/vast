@@ -14,7 +14,7 @@ import attr
 from enum import Enum
 
 from vast import validators
-from vast.models.shared import pre_make
+from vast.models.shared import pre_make, with_checker_converter
 
 
 # TODO make the from_string method a closure or shared method
@@ -83,10 +83,28 @@ class TrackingEventType(Enum):
         return None
 
 
+
+@with_checker_converter()
 @attr.s(frozen=True)
-class _TrackingEvent(object):
+class TrackingEvent(object):
+    REQUIRED = ("tracking_event_uri", "tracking_event_type")
+    CONVERTERS = [
+        (unicode, ("tracking_event_uri", )),
+        (TrackingEventType, ("tracking_event_type", ))
+    ]
+
     tracking_event_uri = attr.ib()
     tracking_event_type = attr.ib()
+
+    @classmethod
+    def make(cls, tracking_event_uri, tracking_event_type):
+        instance =  cls.check_and_convert(
+            args_dict=dict(
+                tracking_event_uri=tracking_event_uri,
+                tracking_event_type=tracking_event_type,
+            ),
+        )
+        return instance
 
 
 @attr.s(frozen=True)
@@ -245,21 +263,19 @@ MIN_MAX_VALIDATOR = validators.make_min_max_validator()
 
 IN_VALIDATOR = validators.make_in_validator
 
-TRACKING_EVENT_VALIDATOR = validators.make_type_validator(_TrackingEvent)
+TRACKING_EVENT_VALIDATOR = validators.make_type_validator(TrackingEvent)
 CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
 WRAPPER_VALIDATOR = validators.make_type_validator(_Wrapper)
 INLINE_VALIDATOR = validators.make_type_validator(_InLine)
 
-AD_VALIDATOR = validators.make_type_validator(_Ad)
 VERSIONS = "2.0",
 VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
 
 
 # These are make functions
 @pre_make(
-    required=("tracking_event_uri", "tracking_event_type"),
-    convertors=[("tracking_event_uri", unicode)],
-    enums=[("tracking_event_type", TrackingEventType)],
+    required=TrackingEvent.REQUIRED,
+    convertors=TrackingEvent.CONVERTERS,
 )
 def make_tracking_event(tracking_event_uri=None, tracking_event_type=None):
     """
@@ -268,12 +284,17 @@ def make_tracking_event(tracking_event_uri=None, tracking_event_type=None):
     :param tracking_event_type:
     :return:
     """
-    return _TrackingEvent(
+    return TrackingEvent(
         tracking_event_uri=tracking_event_uri,
         tracking_event_type=tracking_event_type,
     )
 
 
+# @pre_make(
+#     required=("asset", "delivery", "type", "width", "height"),
+#     convertors=[("tracking_event_uri", unicode)],
+#     enums=[("tracking_event_type", TrackingEventType)],
+# )
 def make_media_file(
          asset, delivery, type, width, height,
          codec=None, id=None, bitrate=None,
@@ -350,7 +371,7 @@ def make_media_file(
     convertors=[("duration", int)],
     classes=[
         ("media_files", _MediaFile, True),
-        ("tracking_events", _TrackingEvent, True),
+        ("tracking_events", TrackingEvent, True),
     ]
 )
 def make_linear_creative(
@@ -368,6 +389,7 @@ def make_linear_creative(
     return _LinearCreative(duration, media_files, video_clicks, ad_parameters, tracking_events)
 
 
+# TODO add a pre make here
 def make_creative(
         linear=None, non_linear=None, companion_ad=None,
         id=None, sequence=None, ad_id=None, api_framework=None,
@@ -410,22 +432,15 @@ def make_inline(ad_system, ad_title, impression, creatives):
     return _InLine(ad_system, ad_title, impression, creatives)
 
 
+@pre_make(
+    required=("ad_system", "vast_ad_tag_uri"),
+    convertors=[("ad_system", unicode), ("ad_title", unicode), ("impression", unicode), ("error", unicode)],
+    classes=[("creatives", _Creative, True)],
+)
 def make_wrapper(
         ad_system, vast_ad_tag_uri,
         ad_title=None, impression=None, error=None, creatives=None,
 ):
-    UNICODE_VALIDATOR(ad_system, "ad_system")
-    UNICODE_VALIDATOR(vast_ad_tag_uri, "vast_ad_tag_uri")
-    if ad_title is not None:
-        UNICODE_VALIDATOR(ad_title, "ad_title")
-    if impression is not None:
-        UNICODE_VALIDATOR(impression, "impression")
-    if error is not None:
-        UNICODE_VALIDATOR(error, "error")
-    if creatives is not None:
-        for c in creatives:
-            CREATIVE_VALIDATOR(c, "creative")
-
     return _Wrapper(ad_system, vast_ad_tag_uri, ad_title, impression, error, creatives)
 
 
@@ -445,7 +460,10 @@ def make_ad(id, wrapper=None, inline=None):
     return _Ad(id, wrapper, inline)
 
 
+@pre_make(
+    required=("version", "ad"),
+    classes=[("ad", _Ad, False)],
+)
 def make_vast(version, ad):
     VERSION_VALIDATOR(version, "version")
-    AD_VALIDATOR(ad, "ad")
     return _Vast(version, ad)
