@@ -14,7 +14,7 @@ import attr
 from enum import Enum
 
 from vast import validators
-from vast.models.shared import pre_make, with_checker_converter
+from vast.models.shared import with_checker_converter
 
 
 class Delivery(Enum):
@@ -24,7 +24,6 @@ class Delivery(Enum):
 
 class ApiFramework(Enum):
     VPAID = "VPAID"
-
 
 
 class MimeType(Enum):
@@ -79,12 +78,23 @@ class TrackingEvent(object):
         return instance
 
 
+@with_checker_converter()
 @attr.s(frozen=True)
-class _MediaFile(object):
+class MediaFile(object):
     """
     2.3.1.4 Media File Attributes
         
     """
+    REQUIRED = ("asset", "delivery", "type", "width", "height")
+    CONVERTERS = [
+        (unicode, ("asset", "codec", "id")),
+        (int, ("width", "height", "bitrate", "min_bitrate", "max_bitrate")),
+        (bool, ("scalable", "maintain_aspect_ratio")),
+        (ApiFramework, ("api_framework",)),
+        #(Delivery, ("delivery", ))
+    ]
+
+
     asset = attr.ib()
     delivery = attr.ib()
     type = attr.ib()
@@ -100,41 +110,65 @@ class _MediaFile(object):
     maintain_aspect_ratio = attr.ib()
     api_framework = attr.ib()
 
+    @classmethod
+    def make(
+            cls,
+            asset, delivery, type, width, height,
+            codec=None, id=None, bitrate=None, min_bitrate=None, max_bitrate=None,
+            scalable=None, maintain_aspect_ratio=None, api_framework=None,
+    ):
+        """
+            Entry point for making MediaFile instances.
 
-@attr.s(frozen=True)
-class _Creative(object):
-    """
-    A creative in VAST is a file that is part of a VAST ad. 
-    Multiple creative may be provided in the form of  Linear, NonLinear, or Companions. 
-    Multiple creative of the same kind may also be provided in different  
-    technical formats so that the file most suited to the user’s device can be displayed
-     (only the creative best suited to the technology/device would be used in this case).
-    Despite how many or what type of  creative are included as part of the Ad, 
-    all creative files should generally represent the same creative  concept.  
-    Within the <InLine> element is one <Creatives> element. 
-    The <Creatives> element provides  details about the files for each creative to be included as part of the ad experience. 
-    Multiple  <Creative> may be nested within the <Creatives> element. 
-    Note the plural spelling of the primary  element <Creatives> and the singular spelling of the nested element <Creative>. 
-    Each nested <Creative> element contains one of: <Linear>, <NonLinear> or <CompanionAds>.  
-    
-    The following attributes are available for the <Creative> element: 
-    • id: an ad server-defined identifier for the creative
-    • sequence: the numerical order in which each sequenced creative should display 
-        (not to be confused with the <Ad> sequence attribute used to define Ad Pods)
-    • adId: identifies the ad with which the creative is served
-    • apiFramework: the technology used for any included API
-    All creative attributes are optional. 
-    """
+            :param asset: the url to the asset
+            :param delivery: either “progressive” for progressive download protocols (such as HTTP)
+            or “streaming” for streaming protocols.
+            :param type: MIME type for the file container.
+            Popular MIME types include, but are not limited to “video/x- flv” for Flash Video and “video/mp4” for MP4
+            :param width: the native width of the video file, in pixels
+            :param height: the native height of the video file, in pixels
+            :param codec: the codec used to encode the file which can take values as specified by RFC 4281:
+            http://tools.ietf.org/html/rfc4281
+            :param id: an identifier for the media file
+            :param bitrate: for progressive load video, the bitrate value specifies the average bitrate for the media file;
+            :param min_bitrate: used in conjunction with max_bitrate for streaming videos
+            :param max_bitrate: used in conjunction with min_bitrate for streaming videos
+            :param scalable: identifies whether the media file is meant to scale to larger dimensions
+            :param maintain_aspect_ratio: identifies whether aspect ratio for media file is maintained
+            :param api_framework: identifies the API needed to execute an interactive media file
+            :return:
+        """
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                asset=asset,
+                delivery=delivery,
+                type=type,
+                width=width,
+                height=height,
+                codec=codec,
+                id=id,
+                bitrate=bitrate,
+                min_bitrate=min_bitrate,
+                max_bitrate=max_bitrate,
+                scalable=scalable,
+                maintain_aspect_ratio=maintain_aspect_ratio,
+                api_framework=api_framework,
+            ),
+        )
 
-    # This is basically a one of - since there are not many types, we specify them all
-    linear = attr.ib()
-    non_linear = attr.ib()
-    companion_ads = attr.ib()
+        SEMI_POS_INT_VALIDATOR(instance.width, "width")
+        SEMI_POS_INT_VALIDATOR(instance.height, "height")
 
-    id = attr.ib()
-    sequence = attr.ib()
-    ad_id = attr.ib()
-    api_framework = attr.ib()
+        if instance.bitrate is not None:
+            POS_INT_VALIDATOR(instance.bitrate, "bitrate")
+        if instance.delivery == "streaming":
+            POS_INT_VALIDATOR(instance.min_bitrate, "min_bitrate")
+            POS_INT_VALIDATOR(instance.max_bitrate, "max_bitrate")
+            MIN_MAX_VALIDATOR((instance.min_bitrate, instance.max_bitrate), "min max bitrate")
+
+
+        return instance
+
 
 @with_checker_converter()
 @attr.s(frozen=True)
@@ -154,10 +188,9 @@ class LinearCreative(object):
     REQUIRED = ("duration", "media_files")
     CONVERTERS = [(int, ("duration", ))]
     CLASSES = [
-        ("media_files", _MediaFile, True),
+        ("media_files", MediaFile, True),
         ("tracking_events", TrackingEvent, True),
     ]
-
 
     duration = attr.ib()
     media_files = attr.ib()
@@ -186,6 +219,68 @@ class LinearCreative(object):
         return attr.asdict(self, dict_factory=OrderedDict, retain_collection_types=True)
 
 
+@with_checker_converter()
+@attr.s(frozen=True)
+class Creative(object):
+    """
+    A creative in VAST is a file that is part of a VAST ad.
+    Multiple creative may be provided in the form of  Linear, NonLinear, or Companions.
+    Multiple creative of the same kind may also be provided in different
+    technical formats so that the file most suited to the user’s device can be displayed
+     (only the creative best suited to the technology/device would be used in this case).
+    Despite how many or what type of  creative are included as part of the Ad,
+    all creative files should generally represent the same creative  concept.
+    Within the <InLine> element is one <Creatives> element.
+    The <Creatives> element provides  details about the files for each creative to be included as part of the ad experience.
+    Multiple  <Creative> may be nested within the <Creatives> element.
+    Note the plural spelling of the primary  element <Creatives> and the singular spelling of the nested element <Creative>.
+    Each nested <Creative> element contains one of: <Linear>, <NonLinear> or <CompanionAds>.
+
+    The following attributes are available for the <Creative> element:
+    • id: an ad server-defined identifier for the creative
+    • sequence: the numerical order in which each sequenced creative should display
+        (not to be confused with the <Ad> sequence attribute used to define Ad Pods)
+    • adId: identifies the ad with which the creative is served
+    • apiFramework: the technology used for any included API
+    All creative attributes are optional.
+    """
+
+    SOME_OFS = [(("linear", "non_linear", "companion_ads"), 2)]
+    CONVERTERS = [
+        (unicode, ("id", "ad_id")),
+        (ApiFramework, ("api_framework",)),
+        (int, ("sequence",))
+    ]
+    CLASSES = [("linear", LinearCreative, False)]
+
+    linear = attr.ib()
+    non_linear = attr.ib()
+    companion_ads = attr.ib()
+
+    id = attr.ib()
+    sequence = attr.ib()
+    ad_id = attr.ib()
+    api_framework = attr.ib()
+
+    @classmethod
+    def make(cls, linear=None, non_linear=None, companion_ads=None,
+             id=None, sequence=None, ad_id=None, api_framework=None,
+             ):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                linear=linear,
+                non_linear=non_linear,
+                companion_ads=companion_ads,
+                id=id,
+                sequence=sequence,
+                ad_id=ad_id,
+                api_framework=api_framework,
+            ),
+        )
+        if sequence is not None:
+            SEMI_POS_INT_VALIDATOR(sequence, "sequence")
+
+        return instance
 
 
 @with_checker_converter()
@@ -205,7 +300,7 @@ class Inline(object):
     """
     REQUIRED = ("ad_system", "ad_title", "impression", "creatives")
     CONVERTERS = [(unicode, ("ad_system", "ad_title", "impression"))]
-    CLASSES = [("creatives", _Creative, True)]
+    CLASSES = [("creatives", Creative, True)]
 
     ad_system = attr.ib()
     ad_title = attr.ib()
@@ -234,7 +329,7 @@ class Wrapper(object):
     """
     REQUIRED = ("ad_system", "vast_ad_tag_uri")
     CONVERTERS= [(unicode, ("ad_system", "ad_title", "impression", "error"))]
-    CLASSES = [("creatives", _Creative, True)]
+    CLASSES = [("creatives", Creative, True)]
 
     ad_system = attr.ib()
     vast_ad_tag_uri = attr.ib()
@@ -338,119 +433,9 @@ MIN_MAX_VALIDATOR = validators.make_min_max_validator()
 IN_VALIDATOR = validators.make_in_validator
 
 TRACKING_EVENT_VALIDATOR = validators.make_type_validator(TrackingEvent)
-CREATIVE_VALIDATOR = validators.make_type_validator(_Creative)
+CREATIVE_VALIDATOR = validators.make_type_validator(Creative)
 WRAPPER_VALIDATOR = validators.make_type_validator(Wrapper)
 INLINE_VALIDATOR = validators.make_type_validator(Inline)
 
 VERSIONS = "2.0",
 VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
-
-
-# @pre_make(
-#     required=("asset", "delivery", "type", "width", "height"),
-#     convertors=[("tracking_event_uri", unicode)],
-#     enums=[("tracking_event_type", TrackingEventType)],
-# )
-def make_media_file(
-         asset, delivery, type, width, height,
-         codec=None, id=None, bitrate=None,
-         min_bitrate=None, max_bitrate=None, scalable=True,
-         maintain_aspect_ratio=False, api_framework=None,
-         ):
-    """
-    Entry point for making MediaFile instances. 
-
-    :param asset: the url to the asset
-    :param delivery: either “progressive” for progressive download protocols (such as HTTP) 
-    or “streaming” for streaming protocols.
-    :param type: MIME type for the file container. 
-    Popular MIME types include, but are not limited to “video/x- flv” for Flash Video and “video/mp4” for MP4
-    :param width: the native width of the video file, in pixels
-    :param height: the native height of the video file, in pixels
-    :param codec: the codec used to encode the file which can take values as specified by RFC 4281: 
-    http://tools.ietf.org/html/rfc4281
-    :param id: an identifier for the media file
-    :param bitrate: for progressive load video, the bitrate value specifies the average bitrate for the media file;
-    :param min_bitrate: used in conjunction with max_bitrate for streaming videos
-    :param max_bitrate: used in conjunction with min_bitrate for streaming videos
-    :param scalable: identifies whether the media file is meant to scale to larger dimensions
-    :param maintain_aspect_ratio: identifies whether aspect ratio for media file is maintained
-    :param api_framework: identifies the API needed to execute an interactive media file
-    :return: 
-    """
-    UNICODE_VALIDATOR(asset, "asset")
-    width, height = map(int, (width, height))
-    SEMI_POS_INT_VALIDATOR(width, "width")
-    SEMI_POS_INT_VALIDATOR(height, "height")
-
-    if bitrate is not None:
-        bitrate = int(bitrate)
-        POS_INT_VALIDATOR(bitrate, "bitrate")
-    elif delivery == "streaming":
-        min_bitrate, max_bitrate = map(int, (min_bitrate, max_bitrate))
-        POS_INT_VALIDATOR(min_bitrate, "min_bitrate")
-        POS_INT_VALIDATOR(max_bitrate, "max_bitrate")
-        MIN_MAX_VALIDATOR((min_bitrate, max_bitrate), "min max bitrate")
-
-    if scalable is not None:
-        BOOL_VALIDATOR(scalable, "scalable")
-    else:
-        scalable = True
-
-    if maintain_aspect_ratio is not None:
-        BOOL_VALIDATOR(maintain_aspect_ratio, "maintain_aspect_ratio")
-    else:
-        maintain_aspect_ratio = False
-
-    if codec is not None:
-        UNICODE_VALIDATOR(codec, "codec")
-
-    if id is not None:
-        UNICODE_VALIDATOR(id, "id")
-
-    if api_framework is not None:
-        api_framework = ApiFramework(api_framework)
-        if api_framework is None:
-            raise ValueError
-
-    return _MediaFile(
-        asset,
-        delivery, type, width, height,
-        codec=codec, id=id, bitrate=bitrate,
-        min_bitrate=min_bitrate, max_bitrate=max_bitrate, scalable=scalable,
-        maintain_aspect_ratio=maintain_aspect_ratio, api_framework=api_framework,
-    )
-
-
-# TODO add a pre make here
-def make_creative(
-        linear=None, non_linear=None, companion_ad=None,
-        id=None, sequence=None, ad_id=None, api_framework=None,
-):
-    """
-    
-    :param linear: 
-    :param non_linear: 
-    :param companion_ad: 
-    :param id: 
-    :param sequence: 
-    :param ad_id: 
-    :param api_framework: 
-    :return: 
-    """
-    if all(x is None for x in (linear, non_linear, companion_ad)):
-        raise ValueError("Must specify either inline, non_linear or companion_ad")
-
-    # Add type checks here for ad_type
-    if id is not None:
-        STR_VALIDATOR(id, "id")
-    if sequence is not None:
-        SEMI_POS_INT_VALIDATOR(sequence, "sequence")
-    if ad_id is not None:
-        STR_VALIDATOR(ad_id, "ad_id")
-    if api_framework is not None:
-        api_framework = ApiFramework.from_string(api_framework)
-        if api_framework is None:
-            raise ValueError
-
-    return _Creative(linear, non_linear, companion_ad, id, sequence, ad_id, api_framework)

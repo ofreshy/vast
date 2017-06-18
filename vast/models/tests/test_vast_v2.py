@@ -9,7 +9,7 @@ class TestAsDict(unittest.TestCase):
         linear = vast_v2.LinearCreative.make(
             duration=15,
             media_files=(
-                vast_v2.make_media_file(
+                vast_v2.MediaFile.make(
                     asset=u"https://www.dom.com",
                     delivery=u"progressive",
                     type=u"video/mp4",

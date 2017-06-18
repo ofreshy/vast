@@ -9,8 +9,8 @@ class TestValidTypeValidator(TestWithScenarios):
         ("str", dict(type=str, value="str")),
         ("int", dict(type=int, value=5)),
         ("other class", dict(
-            type=vast_v2._MediaFile,
-            value=vast_v2._MediaFile.make(
+            type=vast_v2.MediaFile,
+            value=vast_v2.MediaFile.make(
                 "streaming", "g", 0, 9, min_bitrate=10, max_bitrate=100,
             ))
          )
@@ -28,7 +28,7 @@ class TestInvalidTypeValidator(TestWithScenarios):
     scenarios = [
         ("str", dict(type=str, value=5)),
         ("int", dict(type=int, value="5")),
-        ("other class", dict(type=vast_v2._MediaFile, value=5.6)),
+        ("other class", dict(type=vast_v2.MediaFile, value=5.6)),
     ]
 
     def test_it_fails(self):

@@ -103,10 +103,10 @@ def parse_creative(xml_dict):
     optional_fields = ("@id", "@sequence", "AdId", "@api_framework")
     _id, sequence, ad_id, api_framework = extract_fields(one_of, optional_fields, method="optional")
 
-    return v2_models.make_creative(
+    return v2_models.Creative.make(
         linear=linear,
         non_linear=non_linear,
-        companion_ad=companion_ads,
+        companion_ads=companion_ads,
         id=_id,
         sequence=sequence,
         ad_id=ad_id,
@@ -194,7 +194,7 @@ def parse_media_file(xml_dict):
     if maintain_aspect_ratio is not None:
         maintain_aspect_ratio = to_bool(maintain_aspect_ratio)
 
-    return v2_models.make_media_file(
+    return v2_models.MediaFile.make(
         asset=asset,
         delivery=delivery,
         type=type,
