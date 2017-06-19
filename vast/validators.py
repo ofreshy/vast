@@ -1,127 +1,47 @@
+"""
+Validators for classes
 
-def make_type_validator(_type):
+A validator function always takes in an instance and returns:
+ None if there are no errors
+ An error message if one found
+"""
+
+class ValidationError(Exception):
+    pass
+
+
+def validate(instance, validators=None):
     """
-    Make a validator function to check type 
-    
-    :param _type: such as int / bool 
-    :return: validator function for that type
+    Make functions from all classes should call this method for instance post validation
+
+    :param instance: to be validated
+    :param validators: iterable of validator functions
+    :return: None if no errors, raises a validation errors if there are
     """
-    msg_format = "'{name}' must be {type!r} (got {value!r} that is a {actual!r})."
+    validators = validators or instance.VALIDATORS
 
-    def validate(value, attr_name, msg=None):
-        if not isinstance(value, _type):
-            msg = msg or msg_format.format(
-                name=attr_name, type=_type,
-                actual=value.__class__, value=value
-            )
-            raise TypeError(msg, attr_name, _type, value)
-
-    return validate
+    errors = (v(instance) for v in validators)
+    errors = ",".join([e for e in errors if e])
+    if errors:
+        msg = "validation error(s) found for instance from {cls_name}. Errors = [{errors}]"
+        cls_name = instance.__class__.__name__
+        raise ValidationError(msg.format(cls_name=cls_name, errors=errors))
 
 
-def make_greater_than_validator(must_be_greater_than_me):
-    """
-    Makes greater_than validator function
-     
-    :param must_be_greater_than_me: value that must be (strictly) smaller 
-    :return: validator function for greater than
-    """
-    msg_format = "'{name}' must be greater than {gt!r} but got {value!r}."
+# Generic make functions to make a validator
 
-    def validate(value, attr_name, msg=None):
-        if must_be_greater_than_me >= value:
-            msg = msg or msg_format.format(
-                name=attr_name, gt=must_be_greater_than_me, value=value,
-            )
-            raise ValueError(msg, attr_name, value)
+def make_greater_then_validator(attr_name, value, allow_none=True):
+    msg = "attribute {attr_name} value was {attr_value} but must be greater than {value}"
 
-    return validate
+    def _validate(instance):
+        attr_value = getattr(instance, attr_name, None)
 
+        if attr_value is None:
+            error = not allow_none
+        else:
+            error = attr_value < value
 
-def make_in_validator(_collection):
-    """
-    
-    :param _collection: a collection that implements __in__  
-    :return: validator function for in_ 
-    """
+        if error:
+            return msg.format(attr_name=attr_name, attr_value=attr_value, value=value)
 
-    collection = set(_collection)
-
-    msg_format = "'{name}' with value {value!r} not found in collection {col!r}."
-
-    def validate(value, attr_name, msg=None):
-        if value not in collection:
-            msg = msg or msg_format.format(
-                name=attr_name, value=value, col=_collection,
-            )
-            raise ValueError(msg, attr_name, value)
-
-    return validate
-
-
-def make_min_max_validator():
-    """
-    
-    :return: validator that check that min is <= max 
-    """
-    msg_format = "'{min_val}' >  '{max_val}' for attribute {name!r}."
-
-    def validate(value, attr_name, msg=None):
-        min_val, max_val = value
-        if min_val > max_val:
-            msg = msg or msg_format.format(
-                min_val=min_val, max_val=max_val, name=attr_name,
-            )
-            raise ValueError(msg, attr_name, value)
-
-    return validate
-
-
-def make_compound_validator(*validators):
-    """
-    Makes a validator function from other validator functions
-    :param validators: iterable of validator functions 
-    :return: validator function that applies all validators 
-    """
-    def validate(value, attr_name, msg=None):
-        for validator_fn in validators:
-            validator_fn(value, attr_name, msg=msg)
-
-    return validate
-
-
-# TODO write validators so they return the errors
-def make_class_validator(clazz):
-    """
-
-    :param clazz:
-    :return:
-    """
-    msg = "'{name}' must be of {type!r} but got {actual!r} instead."
-
-    def validate(instance, attr_name):
-        attr = getattr(instance, attr_name)
-        if isinstance(attr, clazz):
-            return None
-        return msg.format(name=attr_name, type=clazz, actual=type(attr))
-
-    return validate
-
-
-def make_enum_validator(enum):
-    """
-
-    :param enum: enum class
-    :return:
-    """
-    allowed_values = set([e.value for e in enum])
-    msg = "Value {attr_value} is not in allowed_values set : ({allowed_values})"
-
-    def validate(instance, attr_name):
-        attr_value = getattr(instance, attr_name)
-        if attr_value in allowed_values:
-            return None
-        return msg.format(attr_value=attr_value, allowed_values=allowed_values)
-
-    return validate
-
+    return _validate

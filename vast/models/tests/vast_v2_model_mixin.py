@@ -24,6 +24,41 @@ class VastModelMixin(object):
             tracking_event_type=tracking_event_type,
         )
 
+    def make_linear_creative(
+            self,
+            duration=15,
+            media_files=None,
+    ):
+        return vast_v2.LinearCreative.make(
+            duration,
+            media_files=media_files or self.make_media_files(),
+            video_clicks=None,
+            ad_parameters=None,
+            tracking_events=None
+        )
+
+    def make_media_files(self):
+        return [
+            self.make_media_file(),
+        ]
+
+    @staticmethod
+    def make_media_file(
+            asset=u"https://www.mag.u",
+            delivery=u"progressive",
+            type=u"video/mp4",
+            width=300,
+            height=250,
+            bitrate=150,
+            codec=None,
+            id="media_file_1_id",
+    ):
+        return vast_v2.MediaFile.make(
+            asset, delivery, type, width, height,
+            codec, id, bitrate, min_bitrate=None, max_bitrate=None,
+            scalable=None, maintain_aspect_ratio=None, api_framework=None
+        )
+
     @staticmethod
     def make_wrapper(
             ad_system=u"Mag",

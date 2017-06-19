@@ -5,10 +5,9 @@ Models for the VAST 2.0 Version
 
 Models are intentionally simple containers with very little logic. 
 
-Models are not meant to be created directly, but instead use the functions provided.
+Models are not meant to be created directly via __init__ method.
+Instead use the 'make' class method provided.
 This to make sure that created models adhere to vast spec. 
-Why not use @classmethods?
-Well, it started as such, but since we want to validate on class of other models it became messy. 
 """
 import attr
 from enum import Enum
@@ -59,10 +58,10 @@ class TrackingEventType(Enum):
 @attr.s(frozen=True)
 class TrackingEvent(object):
     REQUIRED = ("tracking_event_uri", "tracking_event_type")
-    CONVERTERS = [
+    CONVERTERS = (
         (unicode, ("tracking_event_uri", )),
         (TrackingEventType, ("tracking_event_type", ))
-    ]
+    )
 
     tracking_event_uri = attr.ib()
     tracking_event_type = attr.ib()
@@ -86,13 +85,19 @@ class MediaFile(object):
         
     """
     REQUIRED = ("asset", "delivery", "type", "width", "height")
-    CONVERTERS = [
+    CONVERTERS = (
         (unicode, ("asset", "codec", "id")),
         (int, ("width", "height", "bitrate", "min_bitrate", "max_bitrate")),
         (bool, ("scalable", "maintain_aspect_ratio")),
+        (MimeType, ("type", )),
         (ApiFramework, ("api_framework",)),
-        #(Delivery, ("delivery", ))
-    ]
+        (Delivery, ("delivery", ))
+    )
+
+    VALIDATORS = (
+        validators.make_greater_then_validator("height", 0),
+        validators.make_greater_then_validator("width", 0),
+    )
 
 
     asset = attr.ib()
@@ -156,18 +161,35 @@ class MediaFile(object):
             ),
         )
 
-        SEMI_POS_INT_VALIDATOR(instance.width, "width")
-        SEMI_POS_INT_VALIDATOR(instance.height, "height")
+        if instance.type in (MimeType.FLASH, MimeType.JS):
+            vs = list(cls.VALIDATORS)
+        elif instance.delivery == Delivery.PROGRESSIVE:
+            vs = list(cls.VALIDATORS) + [cls._validate_bitrate]
+        else:
+            vs = list(cls.VALIDATORS) + [cls._validate_min_max_bitrate]
 
-        if instance.bitrate is not None:
-            POS_INT_VALIDATOR(instance.bitrate, "bitrate")
-        if instance.delivery == "streaming":
-            POS_INT_VALIDATOR(instance.min_bitrate, "min_bitrate")
-            POS_INT_VALIDATOR(instance.max_bitrate, "max_bitrate")
-            MIN_MAX_VALIDATOR((instance.min_bitrate, instance.max_bitrate), "min max bitrate")
-
+        validators.validate(instance, vs)
 
         return instance
+
+    @staticmethod
+    def _validate_bitrate(instance):
+        if instance.bitrate is None:
+            return "media file bitrate cannot be None for progressive media"
+        if instance.bitrate < 0:
+            return "media file bitrate must be > 0 but was %s" % instance.bitrate
+
+    @staticmethod
+    def _validate_min_max_bitrate(instance):
+        errors = []
+        if instance.min_bitrate is None:
+            errors.append("media file min_bitrate cannot be None for streaming media")
+        if instance.max_bitrate is None:
+            errors.append("media file min_bitrate cannot be None for streaming media")
+        if not errors and instance.min_bitrate > instance.max_bitrate:
+            msg = "media file min_bitrate={min_bitrate} is greater than max_bitrate={max_bitrate}"
+            errors.append(msg.format(min_bitrate=instance.min_bitrate, max_bitrate=instance.max_bitrate))
+        return ",".join(errors) or None
 
 
 @with_checker_converter()
@@ -187,15 +209,16 @@ class LinearCreative(object):
     """
     REQUIRED = ("duration", "media_files")
     CONVERTERS = [(int, ("duration", ))]
-    CLASSES = [
+    CLASSES = (
         ("media_files", MediaFile, True),
         ("tracking_events", TrackingEvent, True),
-    ]
+    )
+    VALIDATORS = (
+        validators.make_greater_then_validator("duration", 0, False),
+    )
 
     duration = attr.ib()
     media_files = attr.ib()
-
-    # OPTIONAL
     video_clicks = attr.ib()
     ad_parameters = attr.ib()
     tracking_events = attr.ib()
@@ -211,7 +234,8 @@ class LinearCreative(object):
                 tracking_events=tracking_events,
             ),
         )
-        POS_INT_VALIDATOR(duration, "duration")
+        validators.validate(instance)
+
         return instance
 
     def as_dict(self):
@@ -245,13 +269,20 @@ class Creative(object):
     All creative attributes are optional.
     """
 
-    SOME_OFS = [(("linear", "non_linear", "companion_ads"), 2)]
-    CONVERTERS = [
+    SOME_OFS = (
+        (("linear", "non_linear", "companion_ads"), 2),
+    )
+    CONVERTERS = (
         (unicode, ("id", "ad_id")),
         (ApiFramework, ("api_framework",)),
         (int, ("sequence",))
-    ]
-    CLASSES = [("linear", LinearCreative, False)]
+    )
+    CLASSES = (
+        ("linear", LinearCreative, False),
+    )
+    VALIDATORS = (
+        validators.make_greater_then_validator("sequence", -1),
+    )
 
     linear = attr.ib()
     non_linear = attr.ib()
@@ -277,8 +308,7 @@ class Creative(object):
                 api_framework=api_framework,
             ),
         )
-        if sequence is not None:
-            SEMI_POS_INT_VALIDATOR(sequence, "sequence")
+        validators.validate(instance, cls.VALIDATORS)
 
         return instance
 
@@ -299,8 +329,8 @@ class Inline(object):
     • <Creatives>: the container for one or more <Creative> elements
     """
     REQUIRED = ("ad_system", "ad_title", "impression", "creatives")
-    CONVERTERS = [(unicode, ("ad_system", "ad_title", "impression"))]
-    CLASSES = [("creatives", Creative, True)]
+    CONVERTERS = ((unicode, ("ad_system", "ad_title", "impression")), )
+    CLASSES = (("creatives", Creative, True), )
 
     ad_system = attr.ib()
     ad_title = attr.ib()
@@ -328,8 +358,8 @@ class Wrapper(object):
     
     """
     REQUIRED = ("ad_system", "vast_ad_tag_uri")
-    CONVERTERS= [(unicode, ("ad_system", "ad_title", "impression", "error"))]
-    CLASSES = [("creatives", Creative, True)]
+    CONVERTERS= ((unicode, ("ad_system", "ad_title", "impression", "error")), )
+    CLASSES = (("creatives", Creative, True), )
 
     ad_system = attr.ib()
     vast_ad_tag_uri = attr.ib()
@@ -360,8 +390,8 @@ class Ad(object):
     
     """
     REQUIRED = ("id", )
-    SOME_OFS = [(("wrapper", "inline"), 1)]
-    CONVERTERS = [(unicode, ("id", ))]
+    SOME_OFS = ((("wrapper", "inline"), 1), )
+    CONVERTERS = ((unicode, ("id", )), )
 
     id = attr.ib()
     wrapper = attr.ib()
@@ -394,7 +424,7 @@ class Vast(object):
     The Document Root Element
     """
     REQUIRED = ("version", "ad")
-    CLASSES = [("ad", Ad, False)]
+    CLASSES = (("ad", Ad, False), )
 
     version = attr.ib()
     ad = attr.ib()
@@ -407,35 +437,12 @@ class Vast(object):
                 ad=ad,
             ),
         )
-        if version != "2.0":
-            msg = "version must be 2.0 for vast 2 instance and was '{version}'"
-            raise ValueError(msg.format(version=version))
+        validators.validate(instance, [cls._validate_version])
 
         return instance
 
-
-
-
-# Factory functions
-STR_VALIDATOR = validators.make_type_validator(str)
-UNICODE_VALIDATOR = validators.make_type_validator(unicode)
-BOOL_VALIDATOR = validators.make_type_validator(bool)
-SEMI_POS_INT_VALIDATOR = validators.make_compound_validator(
-    validators.make_type_validator(int),
-    validators.make_greater_than_validator(-1),
-)
-POS_INT_VALIDATOR = validators.make_compound_validator(
-    validators.make_type_validator(int),
-    validators.make_greater_than_validator(0),
-)
-MIN_MAX_VALIDATOR = validators.make_min_max_validator()
-
-IN_VALIDATOR = validators.make_in_validator
-
-TRACKING_EVENT_VALIDATOR = validators.make_type_validator(TrackingEvent)
-CREATIVE_VALIDATOR = validators.make_type_validator(Creative)
-WRAPPER_VALIDATOR = validators.make_type_validator(Wrapper)
-INLINE_VALIDATOR = validators.make_type_validator(Inline)
-
-VERSIONS = "2.0",
-VERSION_VALIDATOR = validators.make_in_validator(VERSIONS)
+    @staticmethod
+    def _validate_version(instance):
+        if instance.version != "2.0":
+            msg = "version must be 2.0 for vast 2 instance and was '{version}'"
+            return msg.format(version=instance.version)

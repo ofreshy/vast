@@ -42,3 +42,12 @@ class TestMakeTrackingEvent(VastModelMixin, unittest.TestCase):
             self.fail("Failed to make tracking_event, %s" % e)
 
 
+class TestLinearCreative(VastModelMixin, unittest.TestCase):
+    def test_valid_linear_creative(self):
+        try:
+            self.make_linear_creative()
+        except ValueError as e:
+            self.fail("Failed to make tracking_event, %s" % e)
+
+
+
