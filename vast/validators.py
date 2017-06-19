@@ -1,9 +1,9 @@
 """
-Validators for classes
+Validators for class instance
 
 A validator function always takes in an instance and returns:
  None if there are no errors
- An error message if one found
+ An str error message if one found
 """
 
 class ValidationError(Exception):
@@ -18,7 +18,7 @@ def validate(instance, validators=None):
     :param validators: iterable of validator functions
     :return: None if no errors, raises a validation errors if there are
     """
-    validators = validators or instance.VALIDATORS
+    validators = validators or getattr(instance, "VALIDATORS", [])
 
     errors = (v(instance) for v in validators)
     errors = ",".join([e for e in errors if e])
@@ -28,9 +28,15 @@ def validate(instance, validators=None):
         raise ValidationError(msg.format(cls_name=cls_name, errors=errors))
 
 
-# Generic make functions to make a validator
 
 def make_greater_then_validator(attr_name, value, allow_none=True):
+    """
+
+    :param attr_name: attribute name
+    :param value: to be greater than
+    :param allow_none: no error if attribute value is None
+    :return: msg if found an error None otherwise
+    """
     msg = "attribute {attr_name} value was {attr_value} but must be greater than {value}"
 
     def _validate(instance):
