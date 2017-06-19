@@ -11,7 +11,7 @@ class TestValidTypeValidator(TestWithScenarios):
         ("other class", dict(
             type=vast_v2.MediaFile,
             value=vast_v2.MediaFile.make(
-                "streaming", "g", 0, 9, min_bitrate=10, max_bitrate=100,
+                "https://www.asset.com", "streaming", "g", 0, 9, min_bitrate=10, max_bitrate=100,
             ))
          )
     ]
