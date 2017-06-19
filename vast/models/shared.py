@@ -1,7 +1,6 @@
 """
 
 """
-from functools import wraps
 
 
 def make_required_checker(required):
@@ -25,67 +24,7 @@ def make_required_checker(required):
     return check
 
 
-def make_one_of_checker(one_ofs):
-    one_ofs = one_ofs or []
-    msg = "Only 1 attribute from {attr_names} should be found, but found {existing}"
-
-    def checker(args_dict):
-        found = {}
-        errors = []
-        for attr_names in one_ofs:
-            existing = [attr_name for attr_name in attr_names if args_dict.get(attr_name)]
-            if len(existing) != 1:
-                errors.append(
-                    msg.format(
-                        attr_names=attr_names,
-                        existing=existing,
-                    )
-                )
-            else:
-                attr_name = existing[0]
-                found[attr_name] = args_dict[attr_name]
-        return found, errors
-
-    return checker
-
-
 def make_converter(converters, required):
-    converters = converters or []
-    msg = "Cannot convert '{attr_name}={value}' to '{type}'"
-
-    def convert(args_dict):
-        converted = {}
-        errors = []
-
-        for attr_name, c in converters:
-            if attr_name not in args_dict:
-                continue
-            v = args_dict.get(attr_name)
-            if v is None:
-                if attr_name in required:
-                    errors.append(
-                        msg.format(
-                            attr_name=attr_name,
-                            value=v,
-                            type=c,
-                        )
-                    )
-                continue
-
-            try:
-                converted[attr_name] = c(v)
-            except TypeError:
-                errors.append(
-                    msg.format(
-                        attr_name=attr_name,
-                        value=v,
-                        type=c,
-                    )
-                )
-        return converted, errors
-    return convert
-
-def make_converter_new(converters, required):
     converters = converters or []
     msg = "Cannot convert '{attr_name}={value}' to '{type}'"
 
@@ -205,47 +144,6 @@ def make_class_checker(classes, required):
     return check
 
 
-def make_enum_checker(enums, required):
-    enums = enums or ()
-    msg = "'{value}' for {attr_name} cannot be assigned enum value from {enum}"
-
-    def check(args_dict):
-        found = {}
-        errors = []
-        for attr_name, enum in enums:
-            if attr_name not in args_dict:
-                continue
-
-            value = args_dict.get(attr_name)
-            if value is None:
-                if attr_name in required:
-                    errors.append(
-                        msg.format(
-                            value=value,
-                            attr_name=attr_name,
-                            enum=enum,
-                        )
-                    )
-                continue
-
-            try:
-                vnum = enum.from_string(str(value))
-                # TODO should throw here a value error
-                if vnum is None:
-                    raise ValueError
-                found[attr_name] = vnum
-            except ValueError:
-                errors.append(
-                    msg.format(
-                        value=value,
-                        attr_name=attr_name,
-                        enum=enum,
-                    )
-                )
-        return found, errors
-
-    return check
-
 
 def make_bool_converter(bools, required):
     bools = bools or []
@@ -287,44 +185,6 @@ def to_bool(value):
     raise ValueError
 
 
-def pre_make(
-        required=None,
-        one_ofs=None,
-        convertors=None,
-        enums=None,
-        classes=None,
-        bools=None,
-):
-    required = set(required) if required else []
-    ccs = (
-        make_required_checker(required),
-        make_one_of_checker(one_ofs),
-        make_converter(convertors, required),
-        make_enum_checker(enums, required),
-        make_bool_converter(bools, required),
-        make_class_checker(classes, required),
-    )
-
-    def wrapper(make_func):
-        @wraps(make_func)
-        def new_make(**kwargs):
-            found = {}
-            errors = []
-
-            for cc in ccs:
-                f, e = cc(kwargs)
-                found.update(f), errors.extend(e)
-
-            if errors:
-                #TODO
-                raise ValueError(errors)
-
-            return make_func(**found)
-
-        return new_make
-    return wrapper
-
-
 def with_checker_converter():
     """Add a checker converter method to class
     """
@@ -334,7 +194,7 @@ def with_checker_converter():
         ccs = (
             make_required_checker(required),
             make_some_of_checker(getattr(cls, "SOME_OFS", [])),
-            make_converter_new(getattr(cls, "CONVERTERS", []), required),
+            make_converter(getattr(cls, "CONVERTERS", []), required),
             make_bool_converter(getattr(cls, "BOOLS", []), required),
             make_class_checker(getattr(cls, "CLASSES", []), required),
         )
@@ -347,7 +207,7 @@ def with_checker_converter():
                 args.update(f), errors.extend(e)
 
             if errors:
-                msg = "cannot instansiate class : {name}. Got Errors : {errors}"
+                msg = "cannot instantiate class : {name}. Got Errors : {errors}"
                 raise ValueError(msg.format(name=cls.__name__, errors=errors))
 
             return cls(**args)
