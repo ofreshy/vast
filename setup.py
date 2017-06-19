@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 
 if sys.version_info[:2] < (2, 7):
-    raise Exception("Vast lib only work on Python 2.7 ang greater or PyPy")
+    raise Exception("Vast lib only work on Python 2.7 and greater or PyPy")
 
 
 
