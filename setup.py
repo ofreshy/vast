@@ -15,6 +15,7 @@ setup(
     author="Offer Sharabi",
     author_email="sharoffer@gmail.com",
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[],
     setup_requires=["vcversioner"],
     vcversioner={"version_module_paths": ["vast/_version.py"]},
