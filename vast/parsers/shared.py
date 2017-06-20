@@ -33,6 +33,15 @@ def accept_none(parse_func):
     return parse
 
 
+def accept_falsy(parse_func):
+    def parse(xml_dict):
+        if not xml_dict:
+            return None
+        return parse_func(xml_dict)
+
+    return parse
+
+
 def extract_fields(xml_dict, fields, method="required"):
     if method == "required":
         _check_required_fields(xml_dict, fields)

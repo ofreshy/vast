@@ -1,6 +1,7 @@
 from vast.models import vast_v2 as v2_models
 from vast.parsers.shared import (
     accept_none,
+    accept_falsy,
     extract_fields,
     parse_duration,
     ParseError,
@@ -69,14 +70,9 @@ def parse_inline(xml_dict):
     )
 
 
-@accept_none
-def parse_creatives(xml_dict):
-    creatives, = extract_fields(xml_dict, ("Creative",))
-
-    if isinstance(creatives, dict):
-        return [parse_creative(creatives)]
-    if isinstance(creatives, list):
-        return [parse_creative(c) for c in creatives]
+@accept_falsy
+def parse_creatives(creatives):
+    return [parse_creative(c) for c in creatives[0]["Creative"]]
 
 
 def parse_creative(xml_dict):
@@ -131,22 +127,13 @@ def parse_linear_creative(xml_dict):
         media_files=media_files,
         video_clicks=None,
         ad_parameters=None,
-        tracking_events=parse_tracking_creatives(tracking_events),
+        tracking_events=parse_tracking_events(tracking_events),
     )
 
 
-@accept_none
-def parse_tracking_creatives(xml_dict):
-    tracking_events = xml_dict["Tracking"]
-    # There is only one
-    if isinstance(tracking_events, dict):
-        return [parse_tracking_event(tracking_events)]
-
-    # There are several
-    if isinstance(tracking_events, list):
-        return [parse_tracking_event(t) for t in tracking_events]
-
-    return None
+@accept_falsy
+def parse_tracking_events(tracking_events):
+    return [parse_tracking_event(t) for t in tracking_events[0]["Tracking"]]
 
 
 def parse_tracking_event(xml_dict):
@@ -158,18 +145,9 @@ def parse_tracking_event(xml_dict):
     )
 
 
-@accept_none
-def parse_media_files(xml_dict):
-    media_files = xml_dict["MediaFile"]
-    # There is only one media file
-    if isinstance(media_files, dict):
-        return [parse_media_file(media_files)]
-
-    # There are several media files
-    if isinstance(media_files, list):
-        return [parse_media_file(m) for m in media_files]
-
-    return None
+@accept_falsy
+def parse_media_files(media_files):
+    return [parse_media_file(mf) for mf in media_files[0]["MediaFile"]]
 
 
 def parse_media_file(xml_dict):
