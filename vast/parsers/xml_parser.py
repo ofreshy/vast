@@ -8,7 +8,7 @@ _PARSERS = {
     u"2.0": vast_v2.parse_xml
 }
 
-_FORCE_LIST_ATTRIBUTES = (
+_FORCE_LIST_ELEMENTS = (
     "Creatives", "Creative",
     "TrackingEvents", "TrackingEvent",
     "MediaFiles", "MediaFile"
@@ -31,7 +31,7 @@ def from_xml_string(xml_input, **kwargs):
 
 
 def _parse(xml_string_or_file_like_object, **kwargs):
-    kwargs.update({"force_list": _FORCE_LIST_ATTRIBUTES})
+    kwargs.update({"force_list": _FORCE_LIST_ELEMENTS})
     root = xmltodict.parse(xml_string_or_file_like_object, **kwargs)
     if "VAST" not in root:
         raise ParseError("root must have VAST element")
