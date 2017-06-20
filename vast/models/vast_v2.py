@@ -17,15 +17,29 @@ from vast.models.shared import with_checker_converter
 
 
 class Delivery(Enum):
+    """
+    either
+    “progressive” for progressive download protocols (such as HTTP)
+    or
+    “streaming” for streaming protocols.
+    """
     STREAMING = "streaming"
     PROGRESSIVE = "progressive"
 
 
 class ApiFramework(Enum):
+    """
+    The API necessary to communicate with the creative if available
+    """
     VPAID = "VPAID"
 
 
 class MimeType(Enum):
+    """
+     MIME type for the file container.
+     Popular MIME types include, but are not limited to
+     “video/x- flv” for Flash Video and “video/mp4” for MP4
+    """
     MP4 = "video/mp4"
     JS = "application/javascript"
     FLASH = "application/x-shockwave-flash"
@@ -35,6 +49,9 @@ class MimeType(Enum):
 
 
 class TrackingEventType(Enum):
+    """
+    Event Types for User interaction with the Creative
+    """
     CREATIVE_VIEW = "creativeView"
     START = "start"
     FIRST_QUARTILE = "firstQuartile"
@@ -57,6 +74,10 @@ class TrackingEventType(Enum):
 @with_checker_converter()
 @attr.s(frozen=True)
 class TrackingEvent(object):
+    """
+    Event for user interaction with the Creative
+    """
+
     REQUIRED = ("tracking_event_uri", "tracking_event_type")
     CONVERTERS = (
         (unicode, ("tracking_event_uri", )),
