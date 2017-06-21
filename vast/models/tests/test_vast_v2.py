@@ -37,5 +37,7 @@ class TestVastIllegals(VastModelMixin, TestWithScenarios):
         kw = dict(version=u"2.0", ad=self.make_wrapper_ad())
         kw.update(self.update)
         with self.assertRaises(IllegalModelStateError):
-            # We call the model directly here, since we want to test the model make method, not our mixin
+            # We call the model directly here,
+            # since we want to test the model make method,
+            # not our mixin
             vast_v2.Vast.make(**kw)

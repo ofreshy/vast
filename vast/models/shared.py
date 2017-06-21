@@ -1,7 +1,8 @@
-from vast.errors import IllegalModelStateError
 """
 
 """
+from vast.errors import IllegalModelStateError
+
 
 
 def make_required_checker(required):
