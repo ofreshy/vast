@@ -146,38 +146,6 @@ def make_class_checker(classes, required):
     return check
 
 
-
-def make_bool_converter(bools, required):
-    bools = bools or []
-    msg = "Cannot convert '{attr_name}={attr_value}' to boolean"
-
-    def convert(args_dict):
-        found = {}
-        errors = []
-        for attr_name in bools:
-            if attr_name not in args_dict:
-                continue
-            attr_value = args_dict[attr_name]
-            if attr_value is None:
-                if attr_name in required:
-                    errors.append()
-                continue
-
-            try:
-                found[attr_name] = to_bool(attr_value)
-            except ValueError:
-                errors.append(
-                    msg.format(
-                        attr_name=attr_name,
-                        attr_value=attr_value,
-                    )
-                )
-
-        return found, errors
-
-    return convert
-
-
 def to_bool(value):
     value = str(value).lower()
     if value in ("none", "0", "false"):
@@ -197,7 +165,6 @@ def with_checker_converter():
             make_required_checker(required),
             make_some_of_checker(getattr(cls, "SOME_OFS", [])),
             make_converter(getattr(cls, "CONVERTERS", []), required),
-            make_bool_converter(getattr(cls, "BOOLS", []), required),
             make_class_checker(getattr(cls, "CLASSES", []), required),
         )
 
