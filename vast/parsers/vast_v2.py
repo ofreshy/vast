@@ -95,8 +95,11 @@ def _parse_companion_ads_creative(xml_dict):
 
 @accept_none
 def _parse_video_clicks(xml_dict):
-    # TODO
-    pass
+    return v2_models.VideoClicks.make(
+        click_through=xml_dict.get("ClickThrough"),
+        click_tracking=xml_dict.get("ClickTracking"),
+        custom_click=xml_dict.get("CustomClick"),
+    )
 
 
 @accept_none

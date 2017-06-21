@@ -215,6 +215,33 @@ class MediaFile(object):
 
 @with_checker_converter()
 @attr.s(frozen=True)
+class VideoClicks(object):
+    """
+    A container for URI elements, for when a user interacts with the video
+    """
+    CONVERTERS = (
+        (unicode, ("click_through", "click_tracking", "custom_click")),
+    )
+
+    click_through = attr.ib()
+    click_tracking = attr.ib()
+    custom_click = attr.ib()
+
+    @classmethod
+    def make(cls, click_through=None, click_tracking=None, custom_click=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                click_through=click_through,
+                click_tracking=click_tracking,
+                custom_click=custom_click,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
 class LinearCreative(object):
     """
     The most common type of video advertisement trafficked in the industry is a “linear ad”,
