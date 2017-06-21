@@ -1,5 +1,3 @@
-import unittest
-
 from testscenarios import TestWithScenarios
 
 from vast.errors import IllegalModelStateError
