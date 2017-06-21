@@ -290,10 +290,12 @@ class LinearCreative(object):
     <VideoClicks>, <AdParameters> and <TrackingEvents>. 
     """
     REQUIRED = ("duration", "media_files")
-    CONVERTERS = [(int, ("duration", ))]
+    CONVERTERS = ((int, ("duration", )), )
     CLASSES = (
         ("media_files", MediaFile, True),
         ("tracking_events", TrackingEvent, True),
+        ("video_clicks", VideoClicks, False),
+        ("ad_parameters", AdParameters, False),
     )
     VALIDATORS = (
         validators.make_greater_then_validator("duration", 0, False),
@@ -323,6 +325,55 @@ class LinearCreative(object):
     def as_dict(self):
         from collections import OrderedDict
         return attr.asdict(self, dict_factory=OrderedDict, retain_collection_types=True)
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
+class NonLinearCreative(object):
+    """
+    The ad runs concurrently with the video content so the users see the ad while viewing the content.
+    Non-linear video ads can be delivered as text, graphical ads, or as video overlays
+    """
+    REQUIRED = ("non_linear_ads", )
+    CLASSES = (
+        ("non_linear_ads", NonLinearAd, True),
+        ("tracking_events", TrackingEvent, True),
+    )
+
+    non_linear_ads = attr.ib()
+    tracking_events = attr.ib()
+
+    @classmethod
+    def make(cls, non_linear_ads, tracking_events=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                non_linear_ads=non_linear_ads,
+                tracking_events=tracking_events,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
+class NonLinearAd(object):
+    # TODO finish it here
+    static_resource = attr.ib()
+    iframe_resource = attr.ib()
+    html_resource = attr.ib()
+    no_linear_click_through = attr.ib()
+    ad_parameters = attr.ib()
+
+    width = attr.ib()
+    height = attr.ib()
+    expandedWidth = attr.ib()
+    expandedHeight = attr.ib()
+    scalable = attr.ib()
+    maintainAspectRatio = attr.ib()
+    minSuggestedDuration = attr.ib()
+    apiFramework = attr.ib()
+    id = attr.ib()
 
 
 @with_checker_converter()
