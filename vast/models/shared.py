@@ -1,3 +1,4 @@
+from vast.errors import IllegalModelStateError
 """
 
 """
@@ -208,7 +209,7 @@ def with_checker_converter():
 
             if errors:
                 msg = "cannot instantiate class : {name}. Got Errors : {errors}"
-                raise ValueError(msg.format(name=cls.__name__, errors=errors))
+                raise IllegalModelStateError(msg.format(name=cls.__name__, errors=errors))
 
             return cls(**args)
 

@@ -1,3 +1,4 @@
+from vast.errors import IllegalModelStateError
 """
 Validators for class instance
 
@@ -5,9 +6,6 @@ A validator function always takes in an instance and returns:
  None if there are no errors
  An str error message if one found
 """
-
-class ValidationError(Exception):
-    pass
 
 
 def validate(instance, validators=None):
@@ -25,7 +23,7 @@ def validate(instance, validators=None):
     if errors:
         msg = "validation error(s) found for instance from {cls_name}. Errors = [{errors}]"
         cls_name = instance.__class__.__name__
-        raise ValidationError(msg.format(cls_name=cls_name, errors=errors))
+        raise IllegalModelStateError(msg.format(cls_name=cls_name, errors=errors))
 
 
 
