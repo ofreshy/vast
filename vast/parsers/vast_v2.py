@@ -104,8 +104,10 @@ def _parse_video_clicks(xml_dict):
 
 @accept_none
 def _parse_ad_parameters(xml_dict):
-    # TODO
-    pass
+    return v2_models.AdParameters.make(
+        data=xml_dict.get("#text"),
+        xml_encoded=xml_dict.get("@xmlEncoded"),
+    )
 
 
 @accept_falsy

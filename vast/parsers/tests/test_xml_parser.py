@@ -334,3 +334,43 @@ class TestInlineWithTrackingEvents(TestCase):
             ),
         )
         self.assertEqual(actual, expected)
+
+    def test_xml_ad_attributes(self):
+        with open(resources.INLINE_WITH_AD_PARAMETERS, "r") as fp:
+            xml_string = fp.read()
+
+        actual = xml_parser.from_xml_string(xml_string)
+
+        expected = v2_models.Vast.make(
+            version=u"2.0",
+            ad=v2_models.Ad.make_inline(
+                id=u"509080ATOU",
+                inline=v2_models.Inline.make(
+                    ad_system=u"MagU",
+                    ad_title=u"Centers for Disease Control and Prevention: Who Needs a Flu Vaccine",
+                    impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
+                    creatives=[
+                        v2_models.Creative.make(
+                            linear=v2_models.LinearCreative.make(
+                                duration=15,
+                                media_files=[
+                                    v2_models.MediaFile.make(
+                                        asset=u"https://www.cdc.gov/flu/video/who-needs-flu-vaccine-15_720px.mp4",
+                                        delivery=u"progressive",
+                                        type=u"video/mp4",
+                                        bitrate=300,
+                                        width=720,
+                                        height=420,
+                                    ),
+                                ],
+                                ad_parameters=v2_models.AdParameters.make(
+                                    data=u"{data : funky data goes here}",
+                                    xml_encoded=False,
+                                )
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+        )
+        self.assertEqual(actual, expected)

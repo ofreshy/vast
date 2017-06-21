@@ -242,6 +242,40 @@ class VideoClicks(object):
 
 @with_checker_converter()
 @attr.s(frozen=True)
+class AdParameters(object):
+    """
+    Some ad serving systems may want to send data to the media file when first initialized.
+    For example,
+    the  media file may use ad server data to identify the context used to display the creative,
+    what server to talk  to, or even which creative to display.
+    The optional <AdParameters> element for the Linear creative enables this data exchange.
+
+    The optional attribute xmlEncoded is available for the <AdParameters> element to identify whether
+    the ad parameters are xmldencoded
+    """
+    REQUIRED = ("data", )
+    CONVERTERS = (
+        (unicode, ("data", )),
+        (bool, ("xml_encoded", )),
+    )
+
+    data = attr.ib()
+    xml_encoded = attr.ib()
+
+    @classmethod
+    def make(cls, data, xml_encoded=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                data=data,
+                xml_encoded=xml_encoded,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
 class LinearCreative(object):
     """
     The most common type of video advertisement trafficked in the industry is a “linear ad”,
