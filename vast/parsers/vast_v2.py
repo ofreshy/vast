@@ -3,6 +3,7 @@ from vast.parsers.shared import (
     accept_none,
     accept_falsy,
     parse_duration,
+    unicode_to_dict,
 )
 
 
@@ -61,7 +62,7 @@ def _parse_creatives(creatives):
 def _parse_creative(xml_dict):
     return v2_models.Creative.make(
         linear=_parse_linear_creative(xml_dict.get("Linear")),
-        non_linear=_parse_non_linear_creative(xml_dict.get("NonLinear")),
+        non_linear=_parse_non_linear_creative(xml_dict.get("NonLinearAds")),
         companion_ads=_parse_companion_ads_creative(xml_dict.get("CompanionAds")),
         id=xml_dict.get("@id"),
         sequence=xml_dict.get("@sequence"),
@@ -83,8 +84,49 @@ def _parse_linear_creative(xml_dict):
 
 @accept_none
 def _parse_non_linear_creative(xml_dict):
-    # TODO
-    pass
+    return v2_models.NonLinearCreative.make(
+        non_linear_ads=_parse_non_linear_ads(xml_dict.get("NonLinear")),
+        tracking_events=_parse_tracking_events(xml_dict.get("TrackingEvents")),
+    )
+
+def _parse_non_linear_ads(non_linear_ads):
+    return [_parse_non_linear_ad(a) for a in non_linear_ads]
+
+
+def _parse_non_linear_ad(xml_dict):
+    return v2_models.NonLinearAd.make(
+        width=xml_dict.get("@width"),
+        height=xml_dict.get("@height"),
+        expanded_width=xml_dict.get("@expandedWidth"),
+        expanded_height=xml_dict.get("@expandedHeight"),
+        scalable=xml_dict.get("@scalable"),
+        maintain_aspect_ratio=xml_dict.get("@maintainAspectRatio"),
+        min_suggested_duration=parse_duration(xml_dict.get("@minSuggestedDuration")),
+        api_framework=xml_dict.get("@apiFramework"),
+        id=xml_dict.get("@id"),
+        static_resource=_parse_static_resource(xml_dict.get("StaticResource")),
+        iframe_resource=xml_dict.get("IFrameResource"),
+        html_resource=xml_dict.get("HTMLResource"),
+        non_linear_click_through=_parse_uri_with_id(xml_dict.get("NonLinearClickThrough")),
+        ad_parameters=_parse_ad_parameters(xml_dict.get("AdParameters")),
+    )
+
+
+@accept_none
+def _parse_static_resource(xml_dict):
+    return v2_models.StaticResource.make(
+        resource=xml_dict.get("#text"),
+        mime_type=xml_dict.get("@creativeType"),
+    )
+
+
+@unicode_to_dict
+@accept_none
+def _parse_uri_with_id(xml_dict):
+    return v2_models.UriWithId.make(
+        resource=xml_dict.get("#text"),
+        id=xml_dict.get("@id"),
+    )
 
 
 @accept_none
@@ -102,6 +144,7 @@ def _parse_video_clicks(xml_dict):
     )
 
 
+@unicode_to_dict
 @accept_none
 def _parse_ad_parameters(xml_dict):
     return v2_models.AdParameters.make(

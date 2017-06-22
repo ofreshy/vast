@@ -10,7 +10,7 @@ _PARSERS = {
 
 _FORCE_LIST_ELEMENTS = (
     "Creatives", "Creative",
-    "TrackingEvents", "TrackingEvent",
+    "TrackingEvents", "Tracking",
     "MediaFiles", "MediaFile"
 )
 

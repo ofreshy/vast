@@ -10,20 +10,20 @@
                     <Linear>
                     <Duration>00:00:15</Duration>
                     <TrackingEvents>
-                        <Tracking event="creativeView"> <![CDATA[ https://mag.dom.com/vidtrk?evt=creativeView ]]> </Tracking>>
-                        <Tracking event="start"> <![CDATA[ https://mag.dom.com/vidtrk?evt=start ]]> </Tracking>>
-                        <Tracking event="midpoint"> <![CDATA[ https://mag.dom.com/vidtrk?evt=midpoint ]]> </Tracking>>
-                        <Tracking event="firstQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=firstQuartile ]]> </Tracking>>
-                        <Tracking event="thirdQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=thirdQuartile ]]> </Tracking>>
-                        <Tracking event="complete"> <![CDATA[ https://mag.dom.com/vidtrk?evt=complete ]]> </Tracking>>
-                        <Tracking event="mute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=mute ]]> </Tracking>>
-                        <Tracking event="unmute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=unmute ]]> </Tracking>>
-                        <Tracking event="rewind"> <![CDATA[ https://mag.dom.com/vidtrk?evt=rewind ]]> </Tracking>>
-                        <Tracking event="resume"> <![CDATA[ https://mag.dom.com/vidtrk?evt=resume ]]> </Tracking>>
-                        <Tracking event="fullscreen"> <![CDATA[ https://mag.dom.com/vidtrk?evt=fullscreen ]]> </Tracking>>
-                        <Tracking event="collapse"> <![CDATA[ https://mag.dom.com/vidtrk?evt=collapse ]]> </Tracking>>
-                        <Tracking event="acceptInvitation"> <![CDATA[ https://mag.dom.com/vidtrk?evt=acceptInvitation ]]> </Tracking>>
-                        <Tracking event="close"> <![CDATA[ https://mag.dom.com/vidtrk?evt=close ]]> </Tracking>>
+                        <Tracking event="creativeView"> <![CDATA[ https://mag.dom.com/vidtrk?evt=creativeView ]]> </Tracking>
+                        <Tracking event="start"> <![CDATA[ https://mag.dom.com/vidtrk?evt=start ]]> </Tracking>
+                        <Tracking event="midpoint"> <![CDATA[ https://mag.dom.com/vidtrk?evt=midpoint ]]> </Tracking>
+                        <Tracking event="firstQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=firstQuartile ]]> </Tracking>
+                        <Tracking event="thirdQuartile"> <![CDATA[ https://mag.dom.com/vidtrk?evt=thirdQuartile ]]> </Tracking>
+                        <Tracking event="complete"> <![CDATA[ https://mag.dom.com/vidtrk?evt=complete ]]> </Tracking>
+                        <Tracking event="mute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=mute ]]> </Tracking>
+                        <Tracking event="unmute"> <![CDATA[ https://mag.dom.com/vidtrk?evt=unmute ]]> </Tracking>
+                        <Tracking event="rewind"> <![CDATA[ https://mag.dom.com/vidtrk?evt=rewind ]]> </Tracking>
+                        <Tracking event="resume"> <![CDATA[ https://mag.dom.com/vidtrk?evt=resume ]]> </Tracking>
+                        <Tracking event="fullscreen"> <![CDATA[ https://mag.dom.com/vidtrk?evt=fullscreen ]]> </Tracking>
+                        <Tracking event="collapse"> <![CDATA[ https://mag.dom.com/vidtrk?evt=collapse ]]> </Tracking>
+                        <Tracking event="acceptInvitation"> <![CDATA[ https://mag.dom.com/vidtrk?evt=acceptInvitation ]]> </Tracking>
+                        <Tracking event="close"> <![CDATA[ https://mag.dom.com/vidtrk?evt=close ]]> </Tracking>
                     </TrackingEvents>
                     <MediaFiles>
                         <MediaFile delivery="progressive" type="video/mp4" bitrate="300"  width="720" height="420">https://www.cdc.gov/flu/video/who-needs-flu-vaccine-15_720px.mp4</MediaFile>

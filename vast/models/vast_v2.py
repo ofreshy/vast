@@ -329,6 +329,113 @@ class LinearCreative(object):
 
 @with_checker_converter()
 @attr.s(frozen=True)
+class StaticResource(object):
+    REQUIRED = ("resource", "mime_type")
+    CONVERTERS = (
+        (unicode, ("resource", "mime_type")),
+    )
+    resource = attr.ib()
+    mime_type = attr.ib()
+
+    @classmethod
+    def make(cls, resource, mime_type):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                resource=resource,
+                mime_type=mime_type,
+            ),
+        )
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
+class UriWithId(object):
+    REQUIRED = ("resource", )
+    CONVERTERS = (
+        (unicode, ("resource", "id")),
+    )
+    resource = attr.ib()
+    id = attr.ib()
+
+    @classmethod
+    def make(cls, resource, id=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                resource=resource,
+                id=id,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
+class NonLinearAd(object):
+    REQUIRED = ("width", "height")
+    CONVERTERS = (
+        (unicode, ("iframe_resource", "html_resource", "id")),
+        (int, ("width", "height", "expanded_width", "expanded_height", "min_suggested_duration")),
+        (bool, ("scalable", "maintain_aspect_ratio")),
+        (ApiFramework, ("api_framework", )),
+    )
+    CLASSES = (
+        (StaticResource, "static_resource", False),
+        (AdParameters, "ad_parameters", False),
+        (ApiFramework, "api_framework", False),
+        (UriWithId, "non_linear_click_through", False)
+    )
+    # TODO add SOME_OFS when it is not broken
+
+    width = attr.ib()
+    height = attr.ib()
+    expanded_width = attr.ib()
+    expanded_height = attr.ib()
+    scalable = attr.ib()
+    maintain_aspect_ratio = attr.ib()
+    min_suggested_duration = attr.ib()
+    api_framework = attr.ib()
+    id = attr.ib()
+
+    static_resource = attr.ib()
+    iframe_resource = attr.ib()
+    html_resource = attr.ib()
+    non_linear_click_through = attr.ib()
+    ad_parameters = attr.ib()
+
+    @classmethod
+    def make(
+            cls, width, height, expanded_width=None, expanded_height=None,
+            scalable=None, maintain_aspect_ratio=None, min_suggested_duration=None,
+            api_framework=None, id=None,
+            static_resource=None, iframe_resource=None, html_resource=None,
+            non_linear_click_through=None, ad_parameters=None,
+    ):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                width=width,
+                height=height,
+                expanded_width=expanded_width,
+                expanded_height=expanded_height,
+                scalable=scalable,
+                maintain_aspect_ratio=maintain_aspect_ratio,
+                min_suggested_duration=min_suggested_duration,
+                api_framework=api_framework,
+                id=id,
+                static_resource=static_resource,
+                iframe_resource=iframe_resource,
+                html_resource=html_resource,
+                non_linear_click_through=non_linear_click_through,
+                ad_parameters=ad_parameters,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
 class NonLinearCreative(object):
     """
     The ad runs concurrently with the video content so the users see the ad while viewing the content.
@@ -353,27 +460,6 @@ class NonLinearCreative(object):
         )
 
         return instance
-
-
-@with_checker_converter()
-@attr.s(frozen=True)
-class NonLinearAd(object):
-    # TODO finish it here
-    static_resource = attr.ib()
-    iframe_resource = attr.ib()
-    html_resource = attr.ib()
-    no_linear_click_through = attr.ib()
-    ad_parameters = attr.ib()
-
-    width = attr.ib()
-    height = attr.ib()
-    expandedWidth = attr.ib()
-    expandedHeight = attr.ib()
-    scalable = attr.ib()
-    maintainAspectRatio = attr.ib()
-    minSuggestedDuration = attr.ib()
-    apiFramework = attr.ib()
-    id = attr.ib()
 
 
 @with_checker_converter()
@@ -412,6 +498,7 @@ class Creative(object):
     )
     CLASSES = (
         ("linear", LinearCreative, False),
+        ("non_linear", NonLinearCreative, False),
     )
     VALIDATORS = (
         validators.make_greater_then_validator("sequence", -1),

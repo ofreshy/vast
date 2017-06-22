@@ -14,7 +14,7 @@
                     </MediaFiles>
                     <AdParameters xmlEncoded="false">
                         <![CDATA[ {data : funky data goes here} ]]>
-                    </AdParameters>>
+                    </AdParameters>
                     </Linear>
                 </Creative>
             </Creatives>

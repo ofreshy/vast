@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="2.0">
+    <Ad id="509080ATOU">
+        <InLine>
+            <AdSystem>MagU</AdSystem>
+            <AdTitle>Centers for Disease Control and Prevention: Who Needs a Flu Vaccine</AdTitle>
+            <Impression><![CDATA[ https://mag.dom.com/admy?ad_id=509080ATOU ]]></Impression>
+            <Creatives>
+                <Creative>
+                    <NonLinearAds>
+                        <TrackingEvents>
+                            <Tracking event="creativeView"> <![CDATA[ https://mag.dom.com/vidtrk?evt=creativeView ]]> </Tracking>
+                        </TrackingEvents>
+                        <NonLinear id="non_linear_1" width="100" height="200" expandedWidth="500" expandedHeight="1000" scalable="True" maintainAspectRatio="True"  minSuggestedDuration="00:00:30" apiFramework="VPAID">
+                            <StaticResource creativeType="image/png">
+                                <![CDATA[ https://some.static.resource.png ]]>
+                            </StaticResource>
+                            <IFrameResource>
+                                <![CDATA[ https://some.iframe.resource ]]>
+                            </IFrameResource>
+                            <NonLinearClickThrough id="for_fun">
+                                <![CDATA[ https://mag.dom.com/non/linear/click/through ]]>
+                            </NonLinearClickThrough>
+                        </NonLinear>
+                        <NonLinear id="non_linear_2" width="300" height="700" scalable="False">
+                            <HTMLResource>
+                                <![CDATA[ https://some.html.resource.html ]]>
+                            </HTMLResource>
+                            <AdParameters>
+                                <![CDATA[ {data : funky data goes here} ]]>
+                            </AdParameters>
+                        </NonLinear>
+                    </NonLinearAds>
+                </Creative>
+            </Creatives>
+        </InLine>
+    </Ad>
+</VAST>
