@@ -8,10 +8,8 @@ from vast import resources
 
 class TestWrapperParser(TestCase):
     def test_simple_wrapper_parsed(self):
-        with open(resources.SIMPLE_WRAPPER_XML, "r") as fp:
-            xml_string = fp.read()
+        actual = _parse_xml_from_file(resources.SIMPLE_WRAPPER_XML)
 
-        actual = xml_parser.from_xml_string(xml_string)
         expected = v2_models.Vast.make(
             version=u"2.0",
             ad=v2_models.Ad.make_wrapper(
@@ -31,10 +29,8 @@ class TestWrapperParser(TestCase):
 
 class TestInlineParser(TestCase):
     def test_simple_inline_parsed(self):
-        with open(resources.SIMPLE_INLINE_XML, "r") as fp:
-            xml_string = fp.read()
+        actual = _parse_xml_from_file(resources.SIMPLE_INLINE_XML)
 
-        actual = xml_parser.from_xml_string(xml_string)
         expected = v2_models.Vast.make(
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
@@ -66,10 +62,8 @@ class TestInlineParser(TestCase):
         self.assertEqual(actual, expected)
 
     def test_inline_multi_media_files_parsed(self):
-        with open(resources.INLINE_MULTI_FILES_XML, "r") as fp:
-            xml_string = fp.read()
+        actual = _parse_xml_from_file(resources.INLINE_MULTI_FILES_XML)
 
-        actual = xml_parser.from_xml_string(xml_string)
         expected = v2_models.Vast.make(
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
@@ -162,10 +156,8 @@ class TestInlineParser(TestCase):
 
 class TestInlineWithTrackingEvents(TestCase):
     def test_xml_with_tracking(self):
-        with open(resources.INLINE_WITH_TRACKING_EVENTS_XML, "r") as fp:
-            xml_string = fp.read()
+        actual = _parse_xml_from_file(resources.INLINE_WITH_TRACKING_EVENTS_XML)
 
-        actual = xml_parser.from_xml_string(xml_string)
         expected = v2_models.Vast.make(
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
@@ -255,11 +247,7 @@ class TestInlineWithTrackingEvents(TestCase):
         self.assertEqual(actual, expected)
 
     def test_xml_with_creative_attributes(self):
-        with open(resources.INLINE_WITH_CREATIVE_ATTRIBUTES, "r") as fp:
-            xml_string = fp.read()
-
-        actual = xml_parser.from_xml_string(xml_string)
-
+        actual = _parse_xml_from_file(resources.INLINE_WITH_CREATIVE_ATTRIBUTES)
         expected = v2_models.Vast.make(
             version=u"2.0",
             ad=v2_models.Ad.make_inline(
@@ -295,10 +283,7 @@ class TestInlineWithTrackingEvents(TestCase):
         self.assertEqual(actual, expected)
 
     def test_xml_with_video_clicks(self):
-        with open(resources.INLINE_WITH_VIDEO_CLICKS, "r") as fp:
-            xml_string = fp.read()
-
-        actual = xml_parser.from_xml_string(xml_string)
+        actual = _parse_xml_from_file(resources.INLINE_WITH_VIDEO_CLICKS)
 
         expected = v2_models.Vast.make(
             version=u"2.0",
@@ -336,10 +321,7 @@ class TestInlineWithTrackingEvents(TestCase):
         self.assertEqual(actual, expected)
 
     def test_xml_ad_attributes(self):
-        with open(resources.INLINE_WITH_AD_PARAMETERS, "r") as fp:
-            xml_string = fp.read()
-
-        actual = xml_parser.from_xml_string(xml_string)
+        actual = _parse_xml_from_file(resources.INLINE_WITH_AD_PARAMETERS)
 
         expected = v2_models.Vast.make(
             version=u"2.0",
