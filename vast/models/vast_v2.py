@@ -464,6 +464,92 @@ class NonLinearCreative(object):
 
 @with_checker_converter()
 @attr.s(frozen=True)
+class CompanionAd(object):
+    """
+    Commonly text, display ads, rich media, or skins that wrap around the video experience.
+    These ads come in a number of sizes and shapes and typically run alongside or surrounding the video player
+    """
+    REQUIRED = ("width", "height")
+    CONVERTERS = (
+        (unicode, ("iframe_resource", "html_resource", "id", "alt_text", "companion_click_through")),
+        (int, ("width", "height", "expanded_width", "expanded_height")),
+        (ApiFramework, ("api_framework", )),
+    )
+    CLASSES = (
+        (StaticResource, "static_resource", False),
+        (AdParameters, "ad_parameters", False),
+        (ApiFramework, "api_framework", False),
+    )
+    # TODO add SOME_OFS when it is not broken
+
+    width = attr.ib()
+    height = attr.ib()
+    expanded_width = attr.ib()
+    expanded_height = attr.ib()
+    api_framework = attr.ib()
+    id = attr.ib()
+
+    static_resource = attr.ib()
+    iframe_resource = attr.ib()
+    html_resource = attr.ib()
+    companion_click_through = attr.ib()
+    ad_parameters = attr.ib()
+    alt_text = attr.ib()
+
+    @classmethod
+    def make(
+            cls, width, height, expanded_width=None, expanded_height=None,
+            api_framework=None, id=None,
+            static_resource=None, iframe_resource=None, html_resource=None,
+            companion_click_through=None, ad_parameters=None, alt_text=None,
+    ):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                width=width,
+                height=height,
+                expanded_width=expanded_width,
+                expanded_height=expanded_height,
+                api_framework=api_framework,
+                id=id,
+                static_resource=static_resource,
+                iframe_resource=iframe_resource,
+                html_resource=html_resource,
+                companion_click_through=companion_click_through,
+                ad_parameters=ad_parameters,
+                alt_text=alt_text,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
+class Companion(object):
+    """
+    Companion Ads - Container for Companion Ads
+    Get its own class to be in line with the other creative types
+    """
+    REQUIRED = ("companion_ads", )
+    CLASSES = (
+        ("companion_ads", CompanionAd, True),
+    )
+
+    companion_ads = attr.ib()
+
+    @classmethod
+    def make(cls, companion_ads=None):
+        instance = cls.check_and_convert(
+            args_dict=dict(
+                companion_ads=companion_ads,
+            ),
+        )
+
+        return instance
+
+
+@with_checker_converter()
+@attr.s(frozen=True)
 class Creative(object):
     """
     A creative in VAST is a file that is part of a VAST ad.
