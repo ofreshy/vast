@@ -73,7 +73,7 @@ def _parse_creative(xml_dict):
 
 @accept_none
 def _parse_linear_creative(xml_dict):
-    return v2_models.LinearCreative.make(
+    return v2_models.Linear.make(
         duration=parse_duration(xml_dict.get("Duration")),
         media_files=_parse_media_files(xml_dict.get("MediaFiles")),
         video_clicks=_parse_video_clicks(xml_dict.get("VideoClicks")),
@@ -84,7 +84,7 @@ def _parse_linear_creative(xml_dict):
 
 @accept_none
 def _parse_non_linear_creative(xml_dict):
-    return v2_models.NonLinearCreative.make(
+    return v2_models.NonLinear.make(
         non_linear_ads=_parse_non_linear_ads(xml_dict.get("NonLinear")),
         tracking_events=_parse_tracking_events(xml_dict.get("TrackingEvents")),
     )
@@ -131,9 +131,25 @@ def _parse_uri_with_id(xml_dict):
 
 @accept_none
 def _parse_companion_ads_creative(xml_dict):
-    # TODO
-    pass
+    return v2_models.Companion.make(
+        [_parse_companion_ads(a) for a in xml_dict.get("Companion")[0]]
+    )
 
+def _parse_companion_ads(xml_dict):
+    return v2_models.CompanionAd.make(
+        width=xml_dict.get("@width"),
+        height=xml_dict.get("@height"),
+        expanded_width=xml_dict.get("@expandedWidth"),
+        expanded_height=xml_dict.get("@expandedHeight"),
+        api_framework=xml_dict.get("@apiFramework"),
+        id=xml_dict.get("@id"),
+        static_resource=_parse_static_resource(xml_dict.get("StaticResource")),
+        iframe_resource=xml_dict.get("IFrameResource"),
+        html_resource=xml_dict.get("HTMLResource"),
+        companion_click_through=xml_dict.get("CompanionClickThrough"),
+        ad_parameters=_parse_ad_parameters(xml_dict.get("AdParameters")),
+        alt_text=xml_dict.get("AltText"),
+    )
 
 @accept_none
 def _parse_video_clicks(xml_dict):

@@ -41,7 +41,7 @@ class TestInlineParser(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                            linear=v2_models.Linear.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.MediaFile.make(
@@ -74,7 +74,7 @@ class TestInlineParser(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                            linear=v2_models.Linear.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.MediaFile.make(
@@ -168,7 +168,7 @@ class TestInlineWithTrackingEvents(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                            linear=v2_models.Linear.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.MediaFile.make(
@@ -258,7 +258,7 @@ class TestInlineWithTrackingEvents(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                            linear=v2_models.Linear.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.MediaFile.make(
@@ -295,7 +295,7 @@ class TestInlineWithTrackingEvents(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                            linear=v2_models.Linear.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.MediaFile.make(
@@ -333,7 +333,7 @@ class TestInlineWithTrackingEvents(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            linear=v2_models.LinearCreative.make(
+                            linear=v2_models.Linear.make(
                                 duration=15,
                                 media_files=[
                                     v2_models.MediaFile.make(
@@ -370,7 +370,68 @@ class TestInlineWithTrackingEvents(TestCase):
                     impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
                     creatives=[
                         v2_models.Creative.make(
-                            non_linear=v2_models.NonLinearCreative.make(
+                            non_linear=v2_models.NonLinear.make(
+                                non_linear_ads=[
+                                    v2_models.NonLinearAd.make(
+                                        width=100,
+                                        height=200,
+                                        expanded_width=500,
+                                        expanded_height=1000,
+                                        scalable=True,
+                                        maintain_aspect_ratio=True,
+                                        min_suggested_duration=30,
+                                        api_framework=v2_models.ApiFramework.VPAID,
+                                        id=u"non_linear_1",
+                                        static_resource=v2_models.StaticResource.make(
+                                            resource=u"https://some.static.resource.png",
+                                            mime_type=u"image/png",
+                                        ),
+                                        iframe_resource=u"https://some.iframe.resource",
+                                        non_linear_click_through=v2_models.UriWithId.make(
+                                            resource=u"https://mag.dom.com/non/linear/click/through",
+                                            id=u"for_fun",
+                                        ),
+                                    ),
+                                    v2_models.NonLinearAd.make(
+                                        width=300,
+                                        height=700,
+                                        scalable=False,
+                                        id=u"non_linear_2",
+                                        html_resource=u"https://some.html.resource.html",
+                                        ad_parameters=v2_models.AdParameters.make(
+                                            data=u"{data : funky data goes here}",
+                                        )
+                                    )
+                                ],
+                                tracking_events=[
+                                    v2_models.TrackingEvent.make(
+                                        tracking_event_uri=u"https://mag.dom.com/vidtrk?evt=creativeView",
+                                        tracking_event_type=v2_models.TrackingEventType.CREATIVE_VIEW,
+                                    )
+                                ],
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+        )
+        self.assertEqual(actual, expected)
+
+    def test_xml_with_companions_ads(self):
+        self.fail("not yet implemented really")
+        actual = _parse_xml_from_file(resources.INLINE_WITH_NON_LINEAR_ADS)
+
+        expected = v2_models.Vast.make(
+            version=u"2.0",
+            ad=v2_models.Ad.make_inline(
+                id=u"509080ATOU",
+                inline=v2_models.Inline.make(
+                    ad_system=u"MagU",
+                    ad_title=u"Centers for Disease Control and Prevention: Who Needs a Flu Vaccine",
+                    impression=u"https://mag.dom.com/admy?ad_id=509080ATOU",
+                    creatives=[
+                        v2_models.Creative.make(
+                            non_linear=v2_models.NonLinear.make(
                                 non_linear_ads=[
                                     v2_models.NonLinearAd.make(
                                         width=100,

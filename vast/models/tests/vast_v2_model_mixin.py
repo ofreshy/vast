@@ -86,7 +86,7 @@ class VastModelMixin(object):
             duration=15,
             media_files=None,
     ):
-        return vast_v2.LinearCreative.make(
+        return vast_v2.Linear.make(
             duration,
             media_files=media_files or self.make_media_files(),
             video_clicks=None,

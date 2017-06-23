@@ -276,7 +276,7 @@ class AdParameters(object):
 
 @with_checker_converter()
 @attr.s(frozen=True)
-class LinearCreative(object):
+class Linear(object):
     """
     The most common type of video advertisement trafficked in the industry is a “linear ad”,
     which is an ad  that displays in the same area as the content but not at the same time as the content.
@@ -436,7 +436,7 @@ class NonLinearAd(object):
 
 @with_checker_converter()
 @attr.s(frozen=True)
-class NonLinearCreative(object):
+class NonLinear(object):
     """
     The ad runs concurrently with the video content so the users see the ad while viewing the content.
     Non-linear video ads can be delivered as text, graphical ads, or as video overlays
@@ -583,8 +583,8 @@ class Creative(object):
         (int, ("sequence",))
     )
     CLASSES = (
-        ("linear", LinearCreative, False),
-        ("non_linear", NonLinearCreative, False),
+        ("linear", Linear, False),
+        ("non_linear", NonLinear, False),
     )
     VALIDATORS = (
         validators.make_greater_then_validator("sequence", -1),
