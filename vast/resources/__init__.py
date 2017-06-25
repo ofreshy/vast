@@ -10,3 +10,4 @@ INLINE_WITH_CREATIVE_ATTRIBUTES = path.join(THIS_DIR, "inline_with_creative_attr
 INLINE_WITH_VIDEO_CLICKS = path.join(THIS_DIR, "inline_with_video_clicks_v2.xml")
 INLINE_WITH_AD_PARAMETERS = path.join(THIS_DIR, "inline_with_ad_parameters_v2.xml")
 INLINE_WITH_NON_LINEAR_ADS = path.join(THIS_DIR, "inline_with_non_linear_ads_v2.xml")
+INLINE_WITH_COMPANION_ADS = path.join(THIS_DIR, "inline_with_companion_ads_v2.xml")

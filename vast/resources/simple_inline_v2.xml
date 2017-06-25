@@ -8,10 +8,10 @@
             <Creatives>
                 <Creative>
                     <Linear>
-                    <Duration>00:00:15</Duration>
-                    <MediaFiles>
-                        <MediaFile delivery="progressive" type="video/mp4" bitrate="300"  width="720" height="420">https://www.cdc.gov/flu/video/who-needs-flu-vaccine-15_720px.mp4</MediaFile>
-                    </MediaFiles>
+                        <Duration>00:00:15</Duration>
+                        <MediaFiles>
+                            <MediaFile delivery="progressive" type="video/mp4" bitrate="300"  width="720" height="420">https://www.cdc.gov/flu/video/who-needs-flu-vaccine-15_720px.mp4</MediaFile>
+                        </MediaFiles>
                     </Linear>
                 </Creative>
             </Creatives>

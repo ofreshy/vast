@@ -479,6 +479,7 @@ class CompanionAd(object):
         (StaticResource, "static_resource", False),
         (AdParameters, "ad_parameters", False),
         (ApiFramework, "api_framework", False),
+        (TrackingEvent, "tracking_events", True),
     )
     # TODO add SOME_OFS when it is not broken
 
@@ -495,6 +496,7 @@ class CompanionAd(object):
     companion_click_through = attr.ib()
     ad_parameters = attr.ib()
     alt_text = attr.ib()
+    tracking_events = attr.ib()
 
     @classmethod
     def make(
@@ -502,6 +504,7 @@ class CompanionAd(object):
             api_framework=None, id=None,
             static_resource=None, iframe_resource=None, html_resource=None,
             companion_click_through=None, ad_parameters=None, alt_text=None,
+            tracking_events=None,
     ):
         instance = cls.check_and_convert(
             args_dict=dict(
@@ -517,6 +520,7 @@ class CompanionAd(object):
                 companion_click_through=companion_click_through,
                 ad_parameters=ad_parameters,
                 alt_text=alt_text,
+                tracking_events=tracking_events,
             ),
         )
 
@@ -575,7 +579,7 @@ class Creative(object):
     """
 
     SOME_OFS = (
-        (("linear", "non_linear", "companion_ads"), 2),
+        (("linear", "non_linear", "companion"), 2),
     )
     CONVERTERS = (
         (unicode, ("id", "ad_id")),
@@ -592,7 +596,7 @@ class Creative(object):
 
     linear = attr.ib()
     non_linear = attr.ib()
-    companion_ads = attr.ib()
+    companion = attr.ib()
 
     id = attr.ib()
     sequence = attr.ib()
@@ -600,14 +604,14 @@ class Creative(object):
     api_framework = attr.ib()
 
     @classmethod
-    def make(cls, linear=None, non_linear=None, companion_ads=None,
+    def make(cls, linear=None, non_linear=None, companion=None,
              id=None, sequence=None, ad_id=None, api_framework=None,
              ):
         instance = cls.check_and_convert(
             args_dict=dict(
                 linear=linear,
                 non_linear=non_linear,
-                companion_ads=companion_ads,
+                companion=companion,
                 id=id,
                 sequence=sequence,
                 ad_id=ad_id,

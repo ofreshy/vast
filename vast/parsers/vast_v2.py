@@ -63,7 +63,7 @@ def _parse_creative(xml_dict):
     return v2_models.Creative.make(
         linear=_parse_linear_creative(xml_dict.get("Linear")),
         non_linear=_parse_non_linear_creative(xml_dict.get("NonLinearAds")),
-        companion_ads=_parse_companion_ads_creative(xml_dict.get("CompanionAds")),
+        companion=_parse_companion_ads_creative(xml_dict.get("CompanionAds")),
         id=xml_dict.get("@id"),
         sequence=xml_dict.get("@sequence"),
         ad_id=xml_dict.get("@adId"),
@@ -132,7 +132,7 @@ def _parse_uri_with_id(xml_dict):
 @accept_none
 def _parse_companion_ads_creative(xml_dict):
     return v2_models.Companion.make(
-        [_parse_companion_ads(a) for a in xml_dict.get("Companion")[0]]
+        [_parse_companion_ads(a) for a in xml_dict.get("Companion")]
     )
 
 def _parse_companion_ads(xml_dict):
@@ -149,6 +149,7 @@ def _parse_companion_ads(xml_dict):
         companion_click_through=xml_dict.get("CompanionClickThrough"),
         ad_parameters=_parse_ad_parameters(xml_dict.get("AdParameters")),
         alt_text=xml_dict.get("AltText"),
+        tracking_events=_parse_tracking_events(xml_dict.get("TrackingEvents")),
     )
 
 @accept_none

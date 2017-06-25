@@ -64,7 +64,7 @@ class VastModelMixin(object):
         return vast_v2.Creative.make(
             linear=linear or self.make_linear_creative(),
             non_linear=non_linear,
-            companion_ads=companion_ads,
+            companion=companion_ads,
             id=id,
             sequence=sequence,
             ad_id=ad_id,

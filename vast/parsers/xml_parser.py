@@ -11,7 +11,8 @@ _PARSERS = {
 _FORCE_LIST_ELEMENTS = (
     "Creatives", "Creative",
     "TrackingEvents", "Tracking",
-    "MediaFiles", "MediaFile"
+    "MediaFiles", "MediaFile",
+    "Companion",
 )
 
 def from_xml_file(xml_file, **kwargs):
