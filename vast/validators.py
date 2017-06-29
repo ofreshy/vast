@@ -1,4 +1,3 @@
-from vast.errors import IllegalModelStateError
 """
 Validators for class instance
 
@@ -7,11 +6,11 @@ A validator function always takes in an instance and returns:
  An str error message if one found
 """
 
+from vast.errors import IllegalModelStateError
+
 
 def validate(instance, validators=None):
     """
-    Make functions from all classes should call this method for instance post validation
-
     :param instance: to be validated
     :param validators: iterable of validator functions
     :return: None if no errors, raises a validation errors if there are
@@ -29,7 +28,6 @@ def validate(instance, validators=None):
 
 def make_greater_then_validator(attr_name, value, allow_none=True):
     """
-
     :param attr_name: attribute name
     :param value: to be greater than
     :param allow_none: no error if attribute value is None
