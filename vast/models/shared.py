@@ -81,6 +81,15 @@ class Converter(object):
         return errors
 
 
+@attr.s()
+class ClassChecker(object):
+    pass
+
+    def check(self, args_dict, required):
+        pass
+
+
+
 def make_required_checker(required):
     """
     Closure over set of required of attributes, e.g.
