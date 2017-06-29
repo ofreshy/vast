@@ -135,6 +135,7 @@ def _parse_companion_ads_creative(xml_dict):
         [_parse_companion_ads(a) for a in xml_dict.get("Companion")]
     )
 
+
 def _parse_companion_ads(xml_dict):
     return v2_models.CompanionAd.make(
         width=xml_dict.get("@width"),
@@ -151,6 +152,7 @@ def _parse_companion_ads(xml_dict):
         alt_text=xml_dict.get("AltText"),
         tracking_events=_parse_tracking_events(xml_dict.get("TrackingEvents")),
     )
+
 
 @accept_none
 def _parse_video_clicks(xml_dict):

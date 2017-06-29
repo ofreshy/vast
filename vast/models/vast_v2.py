@@ -17,7 +17,6 @@ from vast.models.shared import Converter, SomeOf
 from vast.models.shared import with_checker_converter
 
 
-
 class Delivery(Enum):
     """
     either
@@ -72,7 +71,6 @@ class TrackingEventType(Enum):
     CLOSE = "close"
 
 
-
 @with_checker_converter()
 @attr.s(frozen=True)
 class TrackingEvent(object):
@@ -82,12 +80,8 @@ class TrackingEvent(object):
 
     REQUIRED = ("tracking_event_uri", "tracking_event_type")
     CONVERTERS = (
-        (unicode, ("tracking_event_uri", )),
-        (TrackingEventType, ("tracking_event_type", ))
-    )
-    CONVERTERS_2 = (
-        Converter(attr_names=("tracking_event_uri", ), type=unicode),
-        Converter(attr_names=("tracking_event_type", ), type=TrackingEventType),
+        Converter(unicode, ("tracking_event_uri", )),
+        Converter(TrackingEventType, ("tracking_event_type", )),
     )
 
     tracking_event_uri = attr.ib()
@@ -113,12 +107,12 @@ class MediaFile(object):
     """
     REQUIRED = ("asset", "delivery", "type", "width", "height")
     CONVERTERS = (
-        (unicode, ("asset", "codec", "id")),
-        (int, ("width", "height", "bitrate", "min_bitrate", "max_bitrate")),
-        (bool, ("scalable", "maintain_aspect_ratio")),
-        (MimeType, ("type", )),
-        (ApiFramework, ("api_framework",)),
-        (Delivery, ("delivery", ))
+        Converter(type=unicode, attr_names=("asset", "codec", "id")),
+        Converter(type=int, attr_names=("width", "height", "bitrate", "min_bitrate", "max_bitrate")),
+        Converter(type=bool, attr_names=("scalable", "maintain_aspect_ratio")),
+        Converter(type=MimeType, attr_names=("type", )),
+        Converter(type=ApiFramework, attr_names=("api_framework",)),
+        Converter(type=Delivery, attr_names=("delivery", ))
     )
 
     VALIDATORS = (
@@ -226,7 +220,7 @@ class VideoClicks(object):
     A container for URI elements, for when a user interacts with the video
     """
     CONVERTERS = (
-        (unicode, ("click_through", "click_tracking", "custom_click")),
+        Converter(unicode, ("click_through", "click_tracking", "custom_click")),
     )
 
     click_through = attr.ib()
@@ -261,8 +255,8 @@ class AdParameters(object):
     """
     REQUIRED = ("data", )
     CONVERTERS = (
-        (unicode, ("data", )),
-        (bool, ("xml_encoded", )),
+        Converter(unicode, ("data",)),
+        Converter(bool, ("xml_encoded", )),
     )
 
     data = attr.ib()
@@ -296,7 +290,7 @@ class Linear(object):
     <VideoClicks>, <AdParameters> and <TrackingEvents>. 
     """
     REQUIRED = ("duration", "media_files")
-    CONVERTERS = ((int, ("duration", )), )
+    CONVERTERS = (Converter(int, ("duration", )), )
     CLASSES = (
         ("media_files", MediaFile, True),
         ("tracking_events", TrackingEvent, True),
@@ -338,7 +332,7 @@ class Linear(object):
 class StaticResource(object):
     REQUIRED = ("resource", "mime_type")
     CONVERTERS = (
-        (unicode, ("resource", "mime_type")),
+        Converter(unicode, ("resource", "mime_type")),
     )
     resource = attr.ib()
     mime_type = attr.ib()
@@ -359,7 +353,7 @@ class StaticResource(object):
 class UriWithId(object):
     REQUIRED = ("resource", )
     CONVERTERS = (
-        (unicode, ("resource", "id")),
+        Converter(unicode, ("resource", "id")),
     )
     resource = attr.ib()
     id = attr.ib()
@@ -381,10 +375,10 @@ class UriWithId(object):
 class NonLinearAd(object):
     REQUIRED = ("width", "height")
     CONVERTERS = (
-        (unicode, ("iframe_resource", "html_resource", "id")),
-        (int, ("width", "height", "expanded_width", "expanded_height", "min_suggested_duration")),
-        (bool, ("scalable", "maintain_aspect_ratio")),
-        (ApiFramework, ("api_framework", )),
+        Converter(unicode, ("iframe_resource", "html_resource", "id")),
+        Converter(int, ("width", "height", "expanded_width", "expanded_height", "min_suggested_duration")),
+        Converter(bool, ("scalable", "maintain_aspect_ratio")),
+        Converter(ApiFramework, ("api_framework", )),
     )
     CLASSES = (
         (StaticResource, "static_resource", False),
@@ -479,9 +473,9 @@ class CompanionAd(object):
     """
     REQUIRED = ("width", "height")
     CONVERTERS = (
-        (unicode, ("iframe_resource", "html_resource", "id", "alt_text", "companion_click_through")),
-        (int, ("width", "height", "expanded_width", "expanded_height")),
-        (ApiFramework, ("api_framework", )),
+        Converter(unicode, ("iframe_resource", "html_resource", "id", "alt_text", "companion_click_through")),
+        Converter(int, ("width", "height", "expanded_width", "expanded_height")),
+        Converter(ApiFramework, ("api_framework", )),
     )
     CLASSES = (
         (StaticResource, "static_resource", False),
@@ -592,9 +586,9 @@ class Creative(object):
         SomeOf(attr_names=("linear", "non_linear")),
     )
     CONVERTERS = (
-        (unicode, ("id", "ad_id")),
-        (ApiFramework, ("api_framework",)),
-        (int, ("sequence",))
+        Converter(unicode, ("id", "ad_id")),
+        Converter(ApiFramework, ("api_framework",)),
+        Converter(int, ("sequence",))
     )
     CLASSES = (
         ("linear", Linear, False),
@@ -649,7 +643,7 @@ class Inline(object):
     • <Creatives>: the container for one or more <Creative> elements
     """
     REQUIRED = ("ad_system", "ad_title", "impression", "creatives")
-    CONVERTERS = ((unicode, ("ad_system", "ad_title", "impression")), )
+    CONVERTERS = (Converter(unicode, ("ad_system", "ad_title", "impression")), )
     CLASSES = (("creatives", Creative, True), )
 
     ad_system = attr.ib()
@@ -678,7 +672,9 @@ class Wrapper(object):
     
     """
     REQUIRED = ("ad_system", "vast_ad_tag_uri")
-    CONVERTERS= ((unicode, ("ad_system", "ad_title", "impression", "error")), )
+    CONVERTERS = (
+        Converter(unicode, ("ad_system", "ad_title", "impression", "error")),
+    )
     CLASSES = (("creatives", Creative, True), )
 
     ad_system = attr.ib()
@@ -711,7 +707,7 @@ class Ad(object):
     """
     REQUIRED = ("id", )
     SOME_OFS = (SomeOf(attr_names=("wrapper", "inline")), )
-    CONVERTERS = ((unicode, ("id", )), )
+    CONVERTERS = (Converter(unicode, ("id", )), )
 
     id = attr.ib()
     wrapper = attr.ib()

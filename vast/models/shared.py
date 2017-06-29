@@ -20,7 +20,10 @@ class SomeOf(object):
 
     def check(self, args_dict):
         # do not use 'in args_dict' since a key with a None value is not considered as exists
-        existing = [attr_name for attr_name in self.attr_names if args_dict.get(attr_name) is not None]
+        existing = [
+            attr_name for attr_name in self.attr_names
+            if args_dict.get(attr_name) is not None
+        ]
         if len(existing) > self.up_to:
             msg = "Only {up_to} attribute from {attr_names} should be found, but found {existing}"
             return msg.format(
@@ -40,8 +43,8 @@ class SomeOf(object):
 
 @attr.s()
 class Converter(object):
-    attr_names = attr.ib()
     type = attr.ib()
+    attr_names = attr.ib()
 
     def _error(self, attr_name, value):
         msg = "Cannot convert '{attr_name}={value}' to '{type}'"
@@ -52,9 +55,13 @@ class Converter(object):
             )
 
     def _convert(self, value):
-        return self.type(value)
+        # TODO create this via a class method
+        if self.type != bool:
+            return self.type(value)
+        else:
+            return to_bool(value)
 
-    def execute(self, args_dict, required):
+    def convert(self, args_dict, required):
         errors = []
         for attr_name in self.attr_names:
             if attr_name not in args_dict:
@@ -72,7 +79,6 @@ class Converter(object):
                 # enum conversion errors are value errors
                 errors.append(self._error(attr_name, v))
         return errors
-
 
 
 def make_required_checker(required):
@@ -110,61 +116,10 @@ def make_converter(converters, required):
     :param required: set of required attributes
     :return: check function which takes in dictionary of kw args
     """
-    converters = converters or []
-    msg = "Cannot convert '{attr_name}={value}' to '{type}'"
-
-    def convert(args_dict):
-        errors = []
-
-        def add_error():
-            errors.append(
-                msg.format(
-                    attr_name=attr_name,
-                    value=v,
-                    type=_type,
-                )
-            )
-
-        def _convert(value):
-            return to_bool(value) if _type == bool else _type(value)
-
-        for _type, attr_names in converters:
-            for attr_name in attr_names:
-
-                if attr_name not in args_dict:
-                    continue
-
-                v = args_dict.get(attr_name)
-                if v is None:
-                    if attr_name in required:
-                        add_error()
-                    continue
-
-                try:
-                    args_dict[attr_name] = _convert(v)
-                except (TypeError, ValueError):
-                    # enum conversion errors are value errors
-                    add_error()
-        return errors
-    return convert
-
-
-def make_converter_2(converters, required):
-    """
-    Convert fields in args dict
-    e.g.
-    converters = [(int, ("num_of_goal", "people"), ("float", "goal_per_person_ratio", )]
-
-    :param converters: iterable of tuples where each tuple
-    first element is callable type (such as int / float etc.) and
-    second element is an iterable of attribute names to be converted to that type
-    :param required: set of required attributes
-    :return: check function which takes in dictionary of kw args
-    """
     def convert(args_dict):
         errors = list(
             chain.from_iterable(
-                c.execute(args_dict, required) for c in converters
+                c.convert(args_dict, required) for c in converters
             )
         )
         return errors
@@ -253,7 +208,6 @@ def with_checker_converter():
             make_required_checker(required),
             make_some_of_checker(getattr(cls, "SOME_OFS", [])),
             make_converter(getattr(cls, "CONVERTERS", []), required),
-            make_converter_2(getattr(cls, "CONVERTERS_2", []), required),
             make_class_checker(getattr(cls, "CLASSES", []), required),
         )
 
