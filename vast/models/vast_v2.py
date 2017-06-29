@@ -13,7 +13,9 @@ import attr
 from enum import Enum
 
 from vast import validators
+from vast.models.shared import Converter, SomeOf
 from vast.models.shared import with_checker_converter
+
 
 
 class Delivery(Enum):
@@ -82,6 +84,10 @@ class TrackingEvent(object):
     CONVERTERS = (
         (unicode, ("tracking_event_uri", )),
         (TrackingEventType, ("tracking_event_type", ))
+    )
+    CONVERTERS_2 = (
+        Converter(attr_names=("tracking_event_uri", ), type=unicode),
+        Converter(attr_names=("tracking_event_type", ), type=TrackingEventType),
     )
 
     tracking_event_uri = attr.ib()
@@ -386,7 +392,9 @@ class NonLinearAd(object):
         (ApiFramework, "api_framework", False),
         (UriWithId, "non_linear_click_through", False)
     )
-    # TODO add SOME_OFS when it is not broken
+    SOME_OFS = (
+        SomeOf(attr_names=("iframe_resource", "html_resource", "static_resource"), up_to=3),
+    )
 
     width = attr.ib()
     height = attr.ib()
@@ -481,7 +489,9 @@ class CompanionAd(object):
         (ApiFramework, "api_framework", False),
         (TrackingEvent, "tracking_events", True),
     )
-    # TODO add SOME_OFS when it is not broken
+    SOME_OF = (
+        SomeOf(attr_names=("iframe_resource", "html_resource", "static_resource"), up_to=3),
+    )
 
     width = attr.ib()
     height = attr.ib()
@@ -579,7 +589,7 @@ class Creative(object):
     """
 
     SOME_OFS = (
-        (("linear", "non_linear", "companion"), 2),
+        SomeOf(attr_names=("linear", "non_linear")),
     )
     CONVERTERS = (
         (unicode, ("id", "ad_id")),
@@ -700,7 +710,7 @@ class Ad(object):
     
     """
     REQUIRED = ("id", )
-    SOME_OFS = ((("wrapper", "inline"), 1), )
+    SOME_OFS = (SomeOf(attr_names=("wrapper", "inline")), )
     CONVERTERS = ((unicode, ("id", )), )
 
     id = attr.ib()
