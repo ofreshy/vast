@@ -1,37 +1,48 @@
 """
 
 """
+from itertools import chain
+
 from vast.errors import IllegalModelStateError
 
 
-
 def make_required_checker(required):
+    """
+    Closure over set of required of attributes, e.g.
+
+    required = ("id", "name")
+
+    :param required: iterable of attribute names
+    :return: check function which takes in dictionary of kw args
+    """
     msg = "Missing required attribute :'{attr_name}'"
     required = required or []
 
     def check(args_dict):
-        found = {}
-        errors = []
-        for attr_name in required:
-            # check with in as None can be a valid value for some required fields!
-            if attr_name in args_dict:
-                found[attr_name] = args_dict[attr_name]
-            else:
-                errors.append(
-                    msg.format(
-                        attr_name=attr_name,
-                    )
-                )
-        return found, errors
+        errors = [
+            msg.format(attr_name=attr_name)
+            for attr_name in required
+            if attr_name not in args_dict
+        ]
+        return errors
+
     return check
 
 
 def make_converter(converters, required):
+    """
+    Convert fields in args dict
+
+    :param converters: iterable of tuples where each tuple
+    first element is callable type (such as int / float etc.) and
+    second element is an iterable of attribute names to be converted to that type
+    :param required: set of required attributes
+    :return: check function which takes in dictionary of kw args
+    """
     converters = converters or []
     msg = "Cannot convert '{attr_name}={value}' to '{type}'"
 
     def convert(args_dict):
-        converted = {}
         errors = []
 
         for _type, attr_names in converters:
@@ -55,7 +66,7 @@ def make_converter(converters, required):
                         value = _type(v)
                     else:
                         value = to_bool(v)
-                    converted[attr_name] = value
+                    args_dict[attr_name] = value
                 except (TypeError, ValueError):
                     # enum conversion errors are value errors
                     errors.append(
@@ -65,7 +76,7 @@ def make_converter(converters, required):
                             type=_type,
                         )
                     )
-        return converted, errors
+        return errors
     return convert
 
 
@@ -79,12 +90,11 @@ def make_some_of_checker(some_ofs):
     e.g.
     say that t1 is (("att1", "att2"), 1) that means that only att1 or att2 can be present, but not both
     :param some_ofs: list of tuples. See above for format
-    :return: some_of_checker_function
+    :return: check function which takes in dictionary of kw args
     """
     msg = "Only {up_to} attribute from {attr_names} should be found, but found {existing}"
 
     def checker(args_dict):
-        found = {}
         errors = []
         for (attr_names, up_to) in some_ofs:
             existing = [attr_name for attr_name in attr_names if args_dict.get(attr_name)]
@@ -96,21 +106,25 @@ def make_some_of_checker(some_ofs):
                         existing=existing,
                     )
                 )
-            else:
-                found.update(
-                    {attr_name:args_dict.get(attr_name) for attr_name in attr_names}
-                )
-        return found, errors
+        return errors
 
     return checker
 
 
 def make_class_checker(classes, required):
+    """
+
+    :param classes: iterable of tuples where
+     first element is the class itself
+     second element is the attr name that should be instance of that class
+     third element is a bool where if true indicates the attr_name is a container
+    :param required: set of required fields
+    :return: check function which takes in dictionary of kw args
+    """
     classes = classes or []
     msg = "Attribute {attr_name} is not of class {class_name} but of type {type}"
 
     def check(args_dict):
-        found = {}
         errors = []
 
         def check_for_class(v, clazz):
@@ -131,8 +145,6 @@ def make_class_checker(classes, required):
                 if attr_name in required:
                     # This will add an error
                     check_for_class(value, clazz)
-                else:
-                    found[attr_name] = value
                 continue
 
             if not container_type:
@@ -141,7 +153,7 @@ def make_class_checker(classes, required):
                 for v in value:
                     check_for_class(v, clazz)
 
-        return found, errors
+        return errors
 
     return check
 
@@ -169,12 +181,13 @@ def with_checker_converter():
         )
 
         def _check_and_convert(args_dict):
+            # we are going to mutate args when we convert into types
             args = args_dict.copy()
-            errors = []
-            for cc in ccs:
-                f, e = cc(args_dict)
-                args.update(f), errors.extend(e)
-
+            errors = list(
+                chain.from_iterable(
+                    (cc(args) for cc in ccs)
+                )
+            )
             if errors:
                 msg = "cannot instantiate class : {name}. Got Errors : {errors}"
                 raise IllegalModelStateError(msg.format(name=cls.__name__, errors=errors))
