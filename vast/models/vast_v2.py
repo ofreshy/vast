@@ -13,7 +13,7 @@ import attr
 from enum import Enum
 
 from vast import validators
-from vast.models.shared import Converter, SomeOf
+from vast.models.shared import ClassChecker, Converter, SomeOf
 from vast.models.shared import with_checker_converter
 
 
@@ -292,10 +292,10 @@ class Linear(object):
     REQUIRED = ("duration", "media_files")
     CONVERTERS = (Converter(int, ("duration", )), )
     CLASSES = (
-        ("media_files", MediaFile, True),
-        ("tracking_events", TrackingEvent, True),
-        ("video_clicks", VideoClicks, False),
-        ("ad_parameters", AdParameters, False),
+        ClassChecker("media_files", MediaFile, True),
+        ClassChecker("tracking_events", TrackingEvent, True),
+        ClassChecker("video_clicks", VideoClicks, False),
+        ClassChecker("ad_parameters", AdParameters, False),
     )
     VALIDATORS = (
         validators.make_greater_then_validator("duration", 0, False),
@@ -381,10 +381,10 @@ class NonLinearAd(object):
         Converter(ApiFramework, ("api_framework", )),
     )
     CLASSES = (
-        (StaticResource, "static_resource", False),
-        (AdParameters, "ad_parameters", False),
-        (ApiFramework, "api_framework", False),
-        (UriWithId, "non_linear_click_through", False)
+        ClassChecker("static_resource", StaticResource),
+        ClassChecker("ad_parameters", AdParameters),
+        ClassChecker("api_framework", ApiFramework),
+        ClassChecker("non_linear_click_through", UriWithId)
     )
     SOME_OFS = (
         SomeOf(attr_names=("iframe_resource", "html_resource", "static_resource"), up_to=3),
@@ -445,8 +445,8 @@ class NonLinear(object):
     """
     REQUIRED = ("non_linear_ads", )
     CLASSES = (
-        ("non_linear_ads", NonLinearAd, True),
-        ("tracking_events", TrackingEvent, True),
+        ClassChecker("non_linear_ads", NonLinearAd, True),
+        ClassChecker("tracking_events", TrackingEvent, True),
     )
 
     non_linear_ads = attr.ib()
@@ -478,10 +478,10 @@ class CompanionAd(object):
         Converter(ApiFramework, ("api_framework", )),
     )
     CLASSES = (
-        (StaticResource, "static_resource", False),
-        (AdParameters, "ad_parameters", False),
-        (ApiFramework, "api_framework", False),
-        (TrackingEvent, "tracking_events", True),
+        ClassChecker("static_resource", StaticResource),
+        ClassChecker("ad_parameters", AdParameters),
+        ClassChecker("api_framework", ApiFramework),
+        ClassChecker("tracking_events", TrackingEvent, True),
     )
     SOME_OF = (
         SomeOf(attr_names=("iframe_resource", "html_resource", "static_resource"), up_to=3),
@@ -540,7 +540,7 @@ class Companion(object):
     """
     REQUIRED = ("companion_ads", )
     CLASSES = (
-        ("companion_ads", CompanionAd, True),
+        ClassChecker("companion_ads", CompanionAd, True),
     )
 
     companion_ads = attr.ib()
@@ -591,8 +591,8 @@ class Creative(object):
         Converter(int, ("sequence",))
     )
     CLASSES = (
-        ("linear", Linear, False),
-        ("non_linear", NonLinear, False),
+        ClassChecker("linear", Linear),
+        ClassChecker("non_linear", NonLinear),
     )
     VALIDATORS = (
         validators.make_greater_then_validator("sequence", -1),
@@ -644,7 +644,7 @@ class Inline(object):
     """
     REQUIRED = ("ad_system", "ad_title", "impression", "creatives")
     CONVERTERS = (Converter(unicode, ("ad_system", "ad_title", "impression")), )
-    CLASSES = (("creatives", Creative, True), )
+    CLASSES = (ClassChecker("creatives", Creative, True), )
 
     ad_system = attr.ib()
     ad_title = attr.ib()
@@ -675,7 +675,7 @@ class Wrapper(object):
     CONVERTERS = (
         Converter(unicode, ("ad_system", "ad_title", "impression", "error")),
     )
-    CLASSES = (("creatives", Creative, True), )
+    CLASSES = (ClassChecker("creatives", Creative, True), )
 
     ad_system = attr.ib()
     vast_ad_tag_uri = attr.ib()
@@ -708,6 +708,10 @@ class Ad(object):
     REQUIRED = ("id", )
     SOME_OFS = (SomeOf(attr_names=("wrapper", "inline")), )
     CONVERTERS = (Converter(unicode, ("id", )), )
+    CLASSES = (
+        ClassChecker("wrapper", Wrapper),
+        ClassChecker("inline", Inline),
+    )
 
     id = attr.ib()
     wrapper = attr.ib()
@@ -740,7 +744,7 @@ class Vast(object):
     The Document Root Element
     """
     REQUIRED = ("version", "ad")
-    CLASSES = (("ad", Ad, False), )
+    CLASSES = (ClassChecker("ad", Ad, False), )
 
     version = attr.ib()
     ad = attr.ib()

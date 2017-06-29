@@ -19,6 +19,7 @@ class SomeOf(object):
     up_to = attr.ib(default=1)
 
     def check(self, args_dict):
+        errors = []
         # do not use 'in args_dict' since a key with a None value is not considered as exists
         existing = [
             attr_name for attr_name in self.attr_names
@@ -26,19 +27,23 @@ class SomeOf(object):
         ]
         if len(existing) > self.up_to:
             msg = "Only {up_to} attribute from {attr_names} should be found, but found {existing}"
-            return msg.format(
-                up_to=self.up_to,
-                attr_names=self.attr_names,
-                existing=existing
+            errors.append(
+                msg.format(
+                    up_to=self.up_to,
+                    attr_names=self.attr_names,
+                    existing=existing
+                )
             )
-        if len(existing) < self.at_least:
+        elif len(existing) < self.at_least:
             msg = "At least {at_least} attributes from {attr_names} should be found, but found {existing}"
-            return msg.format(
-                at_least=self.at_least,
-                attr_names=self.attr_names,
-                existing=existing
+            errors.append(
+                msg.format(
+                    at_least=self.at_least,
+                    attr_names=self.attr_names,
+                    existing=existing
+                )
             )
-        return None
+        return errors
 
 
 @attr.s()
@@ -55,7 +60,7 @@ class Converter(object):
             )
 
     def _convert(self, value):
-        # TODO create this via a class method
+        # TODO create this via a class method or in init
         if self.type != bool:
             return self.type(value)
         else:
@@ -64,9 +69,6 @@ class Converter(object):
     def convert(self, args_dict, required):
         errors = []
         for attr_name in self.attr_names:
-            if attr_name not in args_dict:
-                continue
-
             v = args_dict.get(attr_name)
             if v is None:
                 if attr_name in required:
@@ -83,11 +85,69 @@ class Converter(object):
 
 @attr.s()
 class ClassChecker(object):
-    pass
+    attr_name = attr.ib()
+    clazz = attr.ib()
+    is_container = attr.ib(default=False)
+
+    def _check(self, errors, v):
+        if not isinstance(v, self.clazz):
+            msg = "Attribute {attr_name} is not of class {class_name} but of type {type}"
+            errors.append(
+                msg.format(
+                    attr_name=self.attr_name,
+                    class_name=self.clazz.__name__,
+                    type=type(v),
+                )
+            )
 
     def check(self, args_dict, required):
-        pass
+        errors = []
+        value = args_dict.get(self.attr_name)
+        if value is None:
+            if self.attr_name in required:
+                self._check(errors, value)
+            return errors
 
+        if not self.is_container:
+            self._check(errors, value)
+            return errors
+
+        for v in value:
+            self._check(errors, v)
+        return errors
+
+
+def _check_required(args_dict, required):
+    msg = "Missing required attribute :'{attr_name}'"
+    return [
+        msg.format(attr_name=attr_name)
+        for attr_name in required
+        if attr_name not in args_dict
+    ]
+
+
+def _check_conversions(args_dict, required, converters):
+    return list(
+        chain.from_iterable(
+            c.convert(args_dict, required) for c in converters
+        )
+    )
+
+
+def _check_some_ofs(args_dict, some_ofs):
+    return list(
+        chain.from_iterable(
+            s.check(args_dict) for s in some_ofs
+        )
+    )
+
+
+def _check_classes(args_dict, required, class_checkers):
+    return list(
+        chain.from_iterable(
+            c.check(args_dict, required) for c in class_checkers
+        )
+    )
 
 
 def make_required_checker(required):
@@ -143,56 +203,33 @@ def make_some_of_checker(some_ofs):
     :return: check function which takes in dictionary of kw args
     """
     def checker(args_dict):
-        errors = (
-            some_of.check(args_dict) for some_of in some_ofs
+        errors = list(
+            chain.from_iterable(
+                s.check(args_dict) for s in some_ofs
+            )
         )
-        return  [e for e in errors if e]
+        return errors
 
     return checker
 
 
-def make_class_checker(classes, required):
+def make_class_checker(classes_checkers, required):
     """
 
-    :param classes: iterable of tuples where
+    :param classes_checkers: iterable of tuples where
      first element is the class itself
      second element is the attr name that should be instance of that class
      third element is a bool where if true indicates the attr_name is a container
     :param required: set of required fields
     :return: check function which takes in dictionary of kw args
     """
-    classes = classes or []
-    msg = "Attribute {attr_name} is not of class {class_name} but of type {type}"
 
     def check(args_dict):
-        errors = []
-
-        def check_for_class(v, clazz):
-            if not isinstance(v, clazz):
-                errors.append(
-                    msg.format(
-                        attr_name=attr_name,
-                        class_name=clazz,
-                        type=type(value),
-                    )
-                )
-
-        for attr_name, clazz, container_type in classes:
-            if attr_name not in args_dict:
-                continue
-            value = args_dict.get(attr_name)
-            if value is None:
-                if attr_name in required:
-                    # This will add an error
-                    check_for_class(value, clazz)
-                continue
-
-            if not container_type:
-                check_for_class(value, clazz)
-            else:
-                for v in value:
-                    check_for_class(v, clazz)
-
+        errors = list(
+            chain.from_iterable(
+                c.check(args_dict, required) for c in classes_checkers
+            )
+        )
         return errors
 
     return check
@@ -240,3 +277,28 @@ def with_checker_converter():
 
         return cls
     return _add_checker_converter
+
+
+# TODO start using this instead of decorator ?
+def check_and_convert(cls, args_dict, required=None, some_ofs=None, converters=None, classes=None):
+    required = required or frozenset(getattr(cls, "REQUIRED", []))
+    some_ofs = some_ofs or getattr(cls, "SOME_OFS", [])
+    converters = converters or getattr(cls, "CONVERTERS", [])
+    classes = classes or getattr(cls, "CLASSES", [])
+
+    args = args_dict.copy()
+    errors = list(
+        chain.from_iterable(
+            (
+                _check_required(args, required),
+                _check_some_ofs(args, some_ofs),
+                _check_conversions(args, required, converters),
+                _check_classes(args, required, classes),
+            )
+        )
+    )
+    if errors:
+        msg = "cannot instantiate class : {name}. Got Errors : {errors}"
+        raise IllegalModelStateError(msg.format(name=cls.__name__, errors=errors))
+
+    return cls(**args)
