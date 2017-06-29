@@ -14,7 +14,7 @@ from enum import Enum
 
 from vast import validators
 from vast.models.shared import ClassChecker, Converter, SomeOf
-from vast.models.shared import with_checker_converter
+from vast.models.shared import check_and_convert
 
 
 class Delivery(Enum):
@@ -71,7 +71,6 @@ class TrackingEventType(Enum):
     CLOSE = "close"
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class TrackingEvent(object):
     """
@@ -89,7 +88,8 @@ class TrackingEvent(object):
 
     @classmethod
     def make(cls, tracking_event_uri, tracking_event_type):
-        instance =  cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 tracking_event_uri=tracking_event_uri,
                 tracking_event_type=tracking_event_type,
@@ -98,7 +98,6 @@ class TrackingEvent(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class MediaFile(object):
     """
@@ -164,7 +163,8 @@ class MediaFile(object):
             :param api_framework: identifies the API needed to execute an interactive media file
             :return:
         """
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 asset=asset,
                 delivery=delivery,
@@ -213,7 +213,6 @@ class MediaFile(object):
         return ",".join(errors) or None
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class VideoClicks(object):
     """
@@ -229,7 +228,8 @@ class VideoClicks(object):
 
     @classmethod
     def make(cls, click_through=None, click_tracking=None, custom_click=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 click_through=click_through,
                 click_tracking=click_tracking,
@@ -240,7 +240,6 @@ class VideoClicks(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class AdParameters(object):
     """
@@ -264,17 +263,16 @@ class AdParameters(object):
 
     @classmethod
     def make(cls, data, xml_encoded=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 data=data,
                 xml_encoded=xml_encoded,
             ),
         )
-
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Linear(object):
     """
@@ -309,7 +307,8 @@ class Linear(object):
 
     @classmethod
     def make(cls, duration, media_files, video_clicks=None, ad_parameters=None, tracking_events=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 duration=duration,
                 media_files=media_files,
@@ -327,7 +326,6 @@ class Linear(object):
         return attr.asdict(self, dict_factory=OrderedDict, retain_collection_types=True)
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class StaticResource(object):
     REQUIRED = ("resource", "mime_type")
@@ -339,7 +337,8 @@ class StaticResource(object):
 
     @classmethod
     def make(cls, resource, mime_type):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 resource=resource,
                 mime_type=mime_type,
@@ -348,7 +347,6 @@ class StaticResource(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class UriWithId(object):
     REQUIRED = ("resource", )
@@ -360,7 +358,8 @@ class UriWithId(object):
 
     @classmethod
     def make(cls, resource, id=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 resource=resource,
                 id=id,
@@ -370,7 +369,6 @@ class UriWithId(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class NonLinearAd(object):
     REQUIRED = ("width", "height")
@@ -414,7 +412,8 @@ class NonLinearAd(object):
             static_resource=None, iframe_resource=None, html_resource=None,
             non_linear_click_through=None, ad_parameters=None,
     ):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 width=width,
                 height=height,
@@ -436,7 +435,6 @@ class NonLinearAd(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class NonLinear(object):
     """
@@ -454,7 +452,8 @@ class NonLinear(object):
 
     @classmethod
     def make(cls, non_linear_ads, tracking_events=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 non_linear_ads=non_linear_ads,
                 tracking_events=tracking_events,
@@ -464,7 +463,6 @@ class NonLinear(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class CompanionAd(object):
     """
@@ -510,7 +508,8 @@ class CompanionAd(object):
             companion_click_through=None, ad_parameters=None, alt_text=None,
             tracking_events=None,
     ):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 width=width,
                 height=height,
@@ -531,7 +530,6 @@ class CompanionAd(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Companion(object):
     """
@@ -547,7 +545,8 @@ class Companion(object):
 
     @classmethod
     def make(cls, companion_ads=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 companion_ads=companion_ads,
             ),
@@ -556,7 +555,6 @@ class Companion(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Creative(object):
     """
@@ -611,7 +609,8 @@ class Creative(object):
     def make(cls, linear=None, non_linear=None, companion=None,
              id=None, sequence=None, ad_id=None, api_framework=None,
              ):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 linear=linear,
                 non_linear=non_linear,
@@ -627,7 +626,6 @@ class Creative(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Inline(object):
     """
@@ -653,7 +651,8 @@ class Inline(object):
 
     @classmethod
     def make(cls, ad_system, ad_title, impression, creatives):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 ad_system=ad_system,
                 ad_title=ad_title,
@@ -665,7 +664,6 @@ class Inline(object):
 
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Wrapper(object):
     """
@@ -686,7 +684,8 @@ class Wrapper(object):
 
     @classmethod
     def make(cls, ad_system, vast_ad_tag_uri, ad_title=None, impression=None, error=None, creatives=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 ad_system=ad_system,
                 vast_ad_tag_uri=vast_ad_tag_uri,
@@ -699,7 +698,6 @@ class Wrapper(object):
         return instance
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Ad(object):
     """
@@ -719,7 +717,8 @@ class Ad(object):
 
     @classmethod
     def make(cls, id, wrapper=None, inline=None):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 id=id,
                 wrapper=wrapper,
@@ -737,7 +736,6 @@ class Ad(object):
         return cls.make(id=id, inline=inline)
 
 
-@with_checker_converter()
 @attr.s(frozen=True)
 class Vast(object):
     """
@@ -751,7 +749,8 @@ class Vast(object):
 
     @classmethod
     def make(cls, version, ad):
-        instance = cls.check_and_convert(
+        instance = check_and_convert(
+            cls,
             args_dict=dict(
                 version=version,
                 ad=ad,
