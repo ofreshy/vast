@@ -49,7 +49,8 @@ class MimeType(Enum):
     MPEG = "application/x-mpegURL"
 
 
-class TrackingEventType(Enum):
+# use str so we can compare enums between v2 and v3
+class TrackingEventType(str, Enum):
     """
     Event Types for User interaction with the Creative
     """
