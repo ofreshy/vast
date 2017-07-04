@@ -1,8 +1,7 @@
 import xmltodict
 
-
+from vast.errors import ParseError
 from vast.parsers import vast_v2
-from vast.parsers.shared import ParseError
 
 _PARSERS = {
     u"2.0": vast_v2.parse_xml

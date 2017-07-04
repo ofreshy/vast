@@ -1,7 +1,3 @@
-
-class ParseError(Exception):
-    pass
-
 def accept_none(parse_func):
     def parse(xml_dict):
         if xml_dict is None:

@@ -18,7 +18,7 @@ def validate(instance, validators=None):
     validators = validators or getattr(instance, "VALIDATORS", [])
 
     errors = (v(instance) for v in validators)
-    errors = ",".join([e for e in errors if e])
+    errors = ",".join((e for e in errors if e))
     if errors:
         msg = "validation error(s) found for instance from {cls_name}. Errors = [{errors}]"
         cls_name = instance.__class__.__name__

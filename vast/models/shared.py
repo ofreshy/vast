@@ -113,22 +113,31 @@ def _to_bool(value):
 @attr.s()
 class ClassChecker(object):
     """
-    checks that a value is an instance of a class
+    Checks that a value is an instance of a class
     """
     attr_name = attr.ib()
     clazz = attr.ib()
     is_container = attr.ib(default=False)
 
-    def _check(self, errors, v):
-        if not isinstance(v, self.clazz):
-            msg = "Attribute {attr_name} is not of class {class_name} but of type {type}"
-            errors.append(
-                msg.format(
-                    attr_name=self.attr_name,
-                    class_name=self.clazz.__name__,
-                    type=type(v),
-                )
+    def _add_error(self, errors, v):
+        msg = "Attribute {attr_name} is not of class {class_name} but of type {type}"
+        errors.append(
+            msg.format(
+                attr_name=self.attr_name,
+                class_name=self.clazz.__name__,
+                type=type(v),
             )
+        )
+
+    def _check(self, errors, v):
+        if self.is_container:
+            vs = (_v for _v in v)
+        else:
+            vs = (v, )
+
+        for value in vs:
+            if not isinstance(value, self.clazz):
+                self._add_error(errors, value)
 
     def check(self, args_dict, required):
         """
@@ -141,15 +150,10 @@ class ClassChecker(object):
         value = args_dict.get(self.attr_name)
         if value is None:
             if self.attr_name in required:
-                self._check(errors, value)
-            return errors
-
-        if not self.is_container:
+                self._add_error(errors, value)
+        else:
             self._check(errors, value)
-            return errors
 
-        for v in value:
-            self._check(errors, v)
         return errors
 
 
