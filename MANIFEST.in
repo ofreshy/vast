@@ -1,1 +1,1 @@
-include vast/resources/*.xml
+recursive-include vast/resources *.xml
