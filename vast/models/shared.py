@@ -19,6 +19,11 @@ class SomeOf(object):
     up_to = attr.ib(default=1)
 
     def check(self, args_dict):
+        """
+
+        :param args_dict: dict of att_names to att_values
+        :return: list of error messages or empty list if no errors found
+        """
         errors = []
         # do not use 'in args_dict' since a key with a None value is not considered as exists
         existing = [
@@ -56,7 +61,7 @@ class Converter(object):
 
     def __attrs_post_init__(self):
         if self.type == bool:
-            self._convert = to_bool
+            self._convert = _to_bool
         else:
             self._convert = self.type
 
@@ -72,6 +77,12 @@ class Converter(object):
         )
 
     def convert(self, args_dict, required):
+        """
+
+        :param args_dict: dict of att_names to att_values
+        :param required: iterable of attribute names
+        :return: list of error messages or empty list if no errors found
+        """
         errors = []
         for attr_name in self.attr_names:
             v = args_dict.get(attr_name)
@@ -82,10 +93,21 @@ class Converter(object):
 
             try:
                 args_dict[attr_name] = self._convert(v)
+
+            # enum conversion errors are value errors
             except (TypeError, ValueError):
-                # enum conversion errors are value errors
                 self._add_error(errors, attr_name, v)
+
         return errors
+
+
+def _to_bool(value):
+    value = str(value).lower()
+    if value in ("none", "0", "false"):
+        return False
+    if value in ("true", "1"):
+        return True
+    raise ValueError
 
 
 @attr.s()
@@ -109,6 +131,12 @@ class ClassChecker(object):
             )
 
     def check(self, args_dict, required):
+        """
+
+        :param args_dict: dict of att_names to att_values
+        :param required: iterable of attribute names
+        :return: list of error messages or empty list if no errors found
+        """
         errors = []
         value = args_dict.get(self.attr_name)
         if value is None:
@@ -182,15 +210,6 @@ def _check_classes(args_dict, required, class_checkers):
             c.check(args_dict, required) for c in class_checkers
         )
     )
-
-def to_bool(value):
-    value = str(value).lower()
-    if value in ("none", "0", "false"):
-        return False
-    if value in ("true", "1"):
-        return True
-    raise ValueError
-
 
 def check_and_convert(cls, args_dict):
     """

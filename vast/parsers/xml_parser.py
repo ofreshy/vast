@@ -15,6 +15,7 @@ _FORCE_LIST_ELEMENTS = (
     "Companion",
 )
 
+
 def from_xml_file(xml_file, **kwargs):
     with open(xml_file, "r") as xml_file_like_object:
         return _parse(xml_file_like_object, **kwargs)
